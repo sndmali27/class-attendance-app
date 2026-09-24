@@ -1,0 +1,17 @@
+{
+  "name": "Class Attendance",
+  "short_name": "Attendance",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#1565c0",
+  "orientation": "portrait",
+  "description": "Daily class attendance management app",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135755.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
