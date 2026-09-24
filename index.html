@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Class Attendance</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+header {
+  background: #1565c0;
+  color: white;
+  padding: 18px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.date {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.container {
+  padding: 12px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.summary div {
+  background: white;
+  padding: 12px 5px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px #ccc;
+}
+
+.present-count { color: #2e7d32; }
+.absent-count { color: #c62828; }
+.late-count { color: #ef6c00; }
+
+.student {
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  padding: 10px;
+  box-shadow: 0 1px 3px #ddd;
+}
+
+.student-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roll {
+  width: 32px;
+  font-weight: bold;
+}
+
+.name {
+  flex: 1;
+  font-weight: 600;
+}
+
+select {
+  padding: 8px;
+  border-radius: 7px;
+  border: 1px solid #bbb;
+  font-size: 14px;
+}
+
+.remark {
+  margin-top: 7px;
+  font-size: 13px;
+  color: #555;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.whatsapp {
+  background: #25D366;
+  color: white;
+}
+
+.reset {
+  background: #1565c0;
+  color: white;
+}
+
+.history {
+  background: #555;
+  color: white;
+}
+
+#messageBox {
+  width: 100%;
+  min-height: 180px;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+  display: none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📚 Class Attendance</h1>
+  <div class="date" id="today"></div>
+</header>
+
+<div class="container">
+
+  <div class="summary">
+    <div>
+      🟢 Present
+      <br>
+      <b class="present-count" id="presentCount">72</b>
+    </div>
+
+    <div>
+      🔴 Absent
+      <br>
+      <b class="absent-count" id="absentCount">0</b>
+    </div>
+
+    <div>
+      🟡 Late
+      <br>
+      <b class="late-count" id="lateCount">0</b>
+    </div>
+  </div>
+
+  <div id="studentList"></div>
+
+  <button class="whatsapp" onclick="generateWhatsApp()">
+    📱 Generate WhatsApp Message
+  </button>
+
+  <textarea id="messageBox" readonly></textarea>
+
+  <button class="reset" onclick="resetToday()">
+    🔄 Reset Today
+  </button>
+
+</div>
+
+<script>
+
+/*
+=================================================
+CLASS ATTENDANCE APP
+=================================================
+Replace the names below with your 72 students.
+=================================================
+*/
+
+const students = [
+  "Student 1",
+  "Student 2",
+  "Student 3",
+  "Student 4",
+  "Student 5",
+  "Student 6",
+  "Student 7",
+  "Student 8",
+  "Student 9",
+  "Student 10",
+  "Student 11",
+  "Student 12",
+  "Student 13",
+  "Student 14",
+  "Student 15",
+  "Student 16",
+  "Student 17",
+  "Student 18",
+  "Student 19",
+  "Student 20",
+  "Student 21",
+  "Student 22",
+  "Student 23",
+  "Student 24",
+  "Student 25",
+  "Student 26",
+  "Student 27",
+  "Student 28",
+  "Student 29",
+  "Student 30",
+  "Student 31",
+  "Student 32",
+  "Student 33",
+  "Student 34",
+  "Student 35",
+  "Student 36",
+  "Student 37",
+  "Student 38",
+  "Student 39",
+  "Student 40",
+  "Student 41",
+  "Student 42",
+  "Student 43",
+  "Student 44",
+  "Student 45",
+  "Student 46",
+  "Student 47",
+  "Student 48",
+  "Student 49",
+  "Student 50",
+  "Student 51",
+  "Student 52",
+  "Student 53",
+  "Student 54",
+  "Student 55",
+  "Student 56",
+  "Student 57",
+  "Student 58",
+  "Student 59",
+  "Student 60",
+  "Student 61",
+  "Student 62",
+  "Student 63",
+  "Student 64",
+  "Student 65",
+  "Student 66",
+  "Student 67",
+  "Student 68",
+  "Student 69",
+  "Student 70",
+  "Student 71",
+  "Student 72"
+];
+
+const attendance = {};
+
+function todayString() {
+  const d = new Date();
+
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    weekday: "long"
+  });
+}
+
+document.getElementById("today").innerText = todayString();
+
+function createStudents() {
+
+  const list = document.getElementById("studentList");
+
+  students.forEach((name, index) => {
+
+    attendance[index] = {
+      status: "Present",
+      remark: ""
+    };
+
+    const div = document.createElement("div");
+
+    div.className = "student";
+
+    div.innerHTML = `
+      <div class="student-top">
+
+        <div class="roll">
+          ${index + 1}
+        </div>
+
+        <div class="name">
+          ${name}
+        </div>
+
+        <select onchange="changeStatus(${index}, this.value)">
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+          <option value="Late">Late</option>
+        </select>
+
+      </div>
+
+      <div class="remark" id="remark${index}">
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
+
+}
+
+function changeStatus(index, status) {
+
+  attendance[index].status = status;
+
+  if (status === "Absent") {
+
+    attendance[index].remark = "Without Permission";
+
+  } else {
+
+    attendance[index].remark = "";
+
+  }
+
+  updateScreen();
+}
+
+function updateScreen() {
+
+  let present = 0;
+  let absent = 0;
+  let late = 0;
+
+  students.forEach((name, index) => {
+
+    if (attendance[index].status === "Present") {
+      present++;
+    }
+
+    if (attendance[index].status === "Absent") {
+      absent++;
+    }
+
+    if (attendance[index].status === "Late") {
+      late++;
+    }
+
+    document.getElementById("remark" + index).innerText =
+      attendance[index].remark
+        ? "Remark: " + attendance[index].remark
+        : "";
+
+  });
+
+  document.getElementById("presentCount").innerText = present;
+  document.getElementById("absentCount").innerText = absent;
+  document.getElementById("lateCount").innerText = late;
+}
+
+function generateWhatsApp() {
+
+  let message = "";
+
+  message += "📅 उपस्थिती – " + todayString() + "\n\n";
+
+  message += "🔴 अनुपस्थित विद्यार्थी\n";
+
+  let absentFound = false;
+
+  students.forEach((name, index) => {
+
+    if (attendance[index].status === "Absent") {
+
+      absentFound = true;
+
+      message +=
+        (index + 1) +
+        ". " +
+        name +
+        " — " +
+        attendance[index].remark +
+        "\n";
+    }
+
+  });
+
+  if (!absentFound) {
+    message += "None\n";
+  }
+
+  message += "\n🟡 उशिरा आलेले विद्यार्थी\n";
+
+  let lateFound = false;
+
+  students.forEach((name, index) => {
+
+    if (attendance[index].status === "Late") {
+
+      lateFound = true;
+
+      message +=
+        (index + 1) +
+        ". " +
+        name +
+        " — Late\n";
+    }
+
+  });
+
+  if (!lateFound) {
+    message += "None\n";
+  }
+
+  message += "\n👥 एकूण विद्यार्थी: " + students.length;
+
+  message +=
+    "\n🟢 उपस्थित: " +
+    document.getElementById("presentCount").innerText;
+
+  message +=
+    "\n🔴 अनुपस्थित: " +
+    document.getElementById("absentCount").innerText;
+
+  message +=
+    "\n🟡 उशिरा: " +
+    document.getElementById("lateCount").innerText;
+
+  const box = document.getElementById("messageBox");
+
+  box.style.display = "block";
+
+  box.value = message;
+
+  box.select();
+
+  navigator.clipboard.writeText(message);
+
+  alert("WhatsApp message copied. Paste it in your class WhatsApp group.");
+
+}
+
+function resetToday() {
+
+  if (!confirm("Reset today's attendance?")) {
+    return;
+  }
+
+  students.forEach((name, index) => {
+
+    attendance[index].status = "Present";
+    attendance[index].remark = "";
+
+  });
+
+  document.querySelectorAll("select").forEach(select => {
+    select.value = "Present";
+  });
+
+  updateScreen();
+
+}
+
+createStudents();
+
+updateScreen();
+
+</script>
+
+</body>
+</html>
