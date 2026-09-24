@@ -168,6 +168,510 @@ button{
   }
 
   .status{
+    margin-left:40px;
+    width:120px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📋 Class Attendance</h1>
+  <div id="date"></div>
+</header>
+
+<div class="container">
+
+  <div class="summary">
+    <div class="box present">
+      <strong id="presentCount">72</strong>
+      Present
+    </div>
+
+    <div class="box absent">
+      <strong id="absentCount">0</strong>
+      Absent
+    </div>
+
+    <div class="box late">
+      <strong id="lateCount">0</strong>
+      Late
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="whatsapp" onclick="generateWhatsApp()">
+      📱 WhatsApp Message
+    </button>
+
+    <button class="reset" onclick="resetToday()">
+      🔄 Reset Today
+    </button>
+  </div>
+
+  <div id="studentList"></div>
+
+  <textarea id="messageBox" readonly></textarea>
+
+</div>
+
+<div class="footer">
+  Attendance is automatically saved on this device.
+</div>
+
+<script>
+
+const students = [
+"Beldar Aqsa Mehamud Kha",
+"Bhoi Dhanshree Bhatu",
+"Bhoi Sakshi Manoj",
+"Dusane Krisha Sanjay",
+"Gavit Anjal Vilesh",
+"Gavit Aradhana Anil",
+"Gavit Jagruti Ravindra",
+"Gavit Rajvi Sulesh",
+"Girase Tanavi Rupsing",
+"Jadhav Rishika Ranjit",
+"Khairnar Aaditi Rohidas",
+"Kokani Kalyani Lalsing",
+"Lad Yashashree Prathamesh",
+"Marathe Kaveri Ashwin",
+"Mavchi Renuka Suresh",
+"Mins Swara Sunil",
+"Pathan Anam Imraan",
+"Pathan Shifa Sohelkhan",
+"Pathan Suhana Sohel",
+"Patil Devanshi Mahendra",
+"Patil Kinjal Mayur",
+"Patil Yashasvi Vishal",
+"Pawar Apurva Dipak",
+"Shaikh Jainab Wasim",
+"Sonawane Vansika Sagar",
+"Valvi Krushika Vikas",
+"Ahire Gajendra Mahendra",
+"Ahire Harshal Hiru",
+"Bagwan Roman Abdul Aziz",
+"Bhoi Aayush Nagesh",
+"Bhoi Manthan Pankaj",
+"Bhoi Pratik Dilip",
+"Bhoye Bhushan Rohidas",
+"Gavit Aarov Habel",
+"Gavit Aarush Rahul",
+"Gavit Aaryan Mehaman",
+"Gavit Arpit Vishnu",
+"Gavit Jigar Jivan",
+"Gavit Madhur Ravindra",
+"Gavit Preyars Suresh",
+"Gavit Priyans Suhas",
+"Gavit Shreyash Sanjay",
+"Gavit Smit Sanjay",
+"Gavit Tejas Dinesh",
+"Gavit Tejas Kushal",
+"Gosavi Aayush Savan",
+"Hire Sarthak Anant",
+"Jadhav Kartikkumar Sanjaykumar",
+"Kokani Samarth Hemant",
+"Lohiya Arhan Shahrukh",
+"Makrani Avesh Aziz",
+"Mavchi Abhimanyu Vilesh",
+"Mavchi Paresh Harish",
+"Mavchi Prince Naresh",
+"Mavchi Prince Ravish",
+"More Sarthak Sanjay",
+"Paradhi Toshit Bhaiyya",
+"Pardeshi Aarav Yogesh",
+"Pathan Moh. Affan Ibrahim",
+"Patil Prakash Ketan",
+"Patil Vedant Jitendra",
+"Pawar Tanmay Pralhad",
+"Sain Ridhansh Dharmeshkumar",
+"Shaikh Samar Rafik",
+"Shaikh Zaid Mohsinoddin",
+"Sonavane Shivraj Girish",
+"Tidke Yash Balasaheb",
+"Valvi Mohit Umesh",
+"Valvi Saksham Rahul",
+"Valvi Varun Vipul",
+"Wadekar Aryan Ravindra",
+"Wagh Laksh Lalit"
+];
+
+const STORAGE_KEY = "classAttendanceHistory";
+
+let history = JSON.parse(
+  localStorage.getItem(STORAGE_KEY) || "{}"
+);
+
+let today = getDateKey();
+
+function getDateKey(date = new Date()){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+
+function getDateText(){
+  return new Date().toLocaleDateString("en-IN",{
+    day:"2-digit",
+    month:"2-digit",
+    year:"numeric",
+    weekday:"long"
+  });
+}
+
+document.getElementById("date").textContent = getDateText();
+
+function saveHistory(){
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(history)
+  );
+}
+
+function getTodayData(){
+
+  if(!history[today]){
+
+    history[today] = {
+      status:{},
+      remark:{}
+    };
+
+    students.forEach((name,index)=>{
+      history[today].status[index] = "Present";
+      history[today].remark[index] = "";
+    });
+
+    saveHistory();
+  }
+
+  return history[today];
+}
+
+function getPreviousStreak(index,status){
+
+  let count = 1;
+
+  const dates = Object.keys(history)
+    .filter(d => d < today)
+    .sort()
+    .reverse();
+
+  for(const date of dates){
+
+    const data = history[date];
+
+    if(
+      data &&
+      data.status &&
+      data.status[index] === status
+    ){
+      count++;
+    }else{
+      break;
+    }
+  }
+
+  return count;
+}
+
+function createStudents(){
+
+  const list = document.getElementById("studentList");
+
+  list.innerHTML = "";
+
+  const data = getTodayData();
+
+  students.forEach((name,index)=>{
+
+    const card = document.createElement("div");
+    card.className = "student";
+
+    const top = document.createElement("div");
+    top.className = "student-top";
+
+    const number = document.createElement("div");
+    number.className = "number";
+    number.textContent = index + 1;
+
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "name";
+    nameDiv.textContent = name;
+
+    const select = document.createElement("select");
+    select.className = "status";
+
+    ["Present","Absent","Late"].forEach(status=>{
+      const option = document.createElement("option");
+      option.value = status;
+      option.textContent = status;
+      select.appendChild(option);
+    });
+
+    select.value = data.status[index] || "Present";
+
+    const remark = document.createElement("select");
+    remark.className = "remark";
+
+    [
+      "Without Permission",
+      "With Permission",
+      "Sick / Medical",
+      "Family / Personal Reason",
+      "Transport / Travel",
+      "Other"
+    ].forEach(text=>{
+      const option = document.createElement("option");
+      option.value = text;
+      option.textContent = text;
+      remark.appendChild(option);
+    });
+
+    if(data.remark[index]){
+      remark.value = data.remark[index];
+    }
+
+    top.appendChild(number);
+    top.appendChild(nameDiv);
+    top.appendChild(select);
+
+    card.appendChild(top);
+    card.appendChild(remark);
+
+    const streak = document.createElement("div");
+    streak.className = "streak";
+    card.appendChild(streak);
+
+    list.appendChild(card);
+
+    function updateStudent(){
+
+      const status = select.value;
+
+      data.status[index] = status;
+
+      if(status === "Absent"){
+
+        remark.style.display = "block";
+
+        if(!data.remark[index]){
+          data.remark[index] = "Without Permission";
+          remark.value = "Without Permission";
+        }
+
+      }else{
+
+        remark.style.display = "none";
+        data.remark[index] = "";
+      }
+
+      if(status === "Late"){
+
+        const days = getPreviousStreak(index,"Late");
+
+        streak.textContent =
+          days > 1
+          ? `⏰ Daily Late – Since ${days} days`
+          : "⏰ Late today";
+
+      }else if(status === "Absent"){
+
+        const days = getPreviousStreak(index,"Absent");
+
+        streak.textContent =
+          days > 1
+          ? `⚠️ Absent – Since ${days} days`
+          : "⚠️ Absent today";
+
+      }else{
+
+        streak.textContent = "";
+      }
+
+      saveHistory();
+      updateSummary();
+    }
+
+    select.addEventListener("change",updateStudent);
+
+    remark.addEventListener("change",()=>{
+
+      data.remark[index] = remark.value;
+
+      saveHistory();
+    });
+
+    updateStudent();
+  });
+}
+
+function updateSummary(){
+
+  const data = getTodayData();
+
+  let present = 0;
+  let absent = 0;
+  let late = 0;
+
+  students.forEach((name,index)=>{
+
+    const status = data.status[index] || "Present";
+
+    if(status === "Present") present++;
+    if(status === "Absent") absent++;
+    if(status === "Late") late++;
+  });
+
+  document.getElementById("presentCount").textContent = present;
+  document.getElementById("absentCount").textContent = absent;
+  document.getElementById("lateCount").textContent = late;
+}
+
+function generateWhatsApp(){
+
+  const data = getTodayData();
+
+  let absentList = [];
+  let lateList = [];
+
+  students.forEach((name,index)=>{
+
+    const status = data.status[index];
+
+    if(status === "Absent"){
+
+      const days = getPreviousStreak(index,"Absent");
+      const remark =
+        data.remark[index] || "Without Permission";
+
+      absentList.push(
+        `${name} — ${remark}` +
+        (days > 1 ? ` — Absent Since ${days} days` : "")
+      );
+    }
+
+    if(status === "Late"){
+
+      const days = getPreviousStreak(index,"Late");
+
+      lateList.push(
+        `${name}` +
+        (days > 1 ? ` — Daily Late Since ${days} days` : " — Late")
+      );
+    }
+  });
+
+  let message =
+    `📋 Class Attendance\n` +
+    `📅 ${getDateText()}\n\n`;
+
+  if(absentList.length){
+
+    message +=
+      `❌ ABSENT (${absentList.length})\n`;
+
+    absentList.forEach((x,i)=>{
+      message += `${i+1}. ${x}\n`;
+    });
+
+    message += "\n";
+  }
+
+  if(lateList.length){
+
+    message +=
+      `⏰ LATE (${lateList.length})\n`;
+
+    lateList.forEach((x,i)=>{
+      message += `${i+1}. ${x}\n`;
+    });
+
+    message += "\n";
+  }
+
+  if(!absentList.length && !lateList.length){
+
+    message += "✅ All students are Present.\n";
+  }
+
+  const box = document.getElementById("messageBox");
+
+  box.style.display = "block";
+  box.value = message;
+
+  if(navigator.share){
+
+    navigator.share({
+      title:"Class Attendance",
+      text:message
+    }).catch(()=>{});
+
+  }else{
+
+    navigator.clipboard.writeText(message);
+
+    alert(
+      "Message copied. You can paste it in WhatsApp."
+    );
+  }
+}
+
+function resetToday(){
+
+  if(!confirm(
+    "Reset today's attendance to Present?"
+  )){
+    return;
+  }
+
+  history[today] = {
+    status:{},
+    remark:{}
+  };
+
+  students.forEach((name,index)=>{
+    history[today].status[index] = "Present";
+    history[today].remark[index] = "";
+  });
+
+  saveHistory();
+
+  createStudents();
+  updateSummary();
+
+  document.getElementById("messageBox").style.display =
+    "none";
+}
+
+createStudents();
+updateSummary();
+
+</script>
+
+</body>
+</html>}
+
+.footer{
+  text-align:center;
+  color:#777;
+  font-size:12px;
+  padding:20px;
+}
+
+@media(max-width:600px){
+  .student-top{
+    flex-wrap:wrap;
+  }
+
+  .name{
+    min-width:calc(100% - 40px);
+  }
+
+  .status{
    .container {
   padding: 12px;
   max-width: 700px;
