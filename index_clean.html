@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1565c0">
+<link rel="manifest" href="./manifest.json">
+<title>Class Attendance</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
+header{background:#1565c0;color:#fff;text-align:center;padding:18px 10px}h1{margin:0;font-size:25px}#date{margin-top:6px}
+.container{max-width:900px;margin:auto;padding:12px}.tabs,.summary,.actions{display:grid;gap:8px}.tabs{grid-template-columns:1fr 1fr;margin-bottom:12px}
+.tab{padding:12px;border:2px solid #1565c0;border-radius:9px;background:#fff;color:#1565c0;font-weight:bold;font-size:16px}.tab.active{background:#1565c0;color:#fff}
+.summary{grid-template-columns:repeat(3,1fr);margin-bottom:12px}.box{background:#fff;border-radius:10px;padding:12px 4px;text-align:center;box-shadow:0 1px 5px #ccc}.box strong{display:block;font-size:23px}.present strong{color:#16803c}.absent strong{color:#d32f2f}.late strong{color:#e65100}
+.actions{grid-template-columns:1fr 1fr;margin-bottom:12px}button{border:0;border-radius:9px;padding:13px 8px;font-size:15px;font-weight:bold}.whatsapp{background:#25d366;color:#fff}.reset{background:#555;color:#fff}
+.student,.studentManage,.addBox{background:#fff;margin-bottom:8px;padding:12px;border-radius:10px;box-shadow:0 1px 4px #ddd}.student-top,.manageRow{display:flex;align-items:center;gap:8px}.number,.manageNumber{min-width:32px;color:#555;font-weight:bold}.name,.manageName{flex:1;font-weight:bold}.status{width:115px;padding:8px;border-radius:7px;border:1px solid #bbb;font-size:14px}.remark{display:none;margin-top:8px;width:100%;padding:8px;border-radius:7px;border:1px solid #ccc}.streak{margin-top:5px;font-size:12px;color:#e65100;font-weight:bold}
+textarea{width:100%;min-height:180px;margin-top:12px;padding:10px;border:1px solid #ccc;border-radius:8px}.addBox input{width:100%;padding:11px;border:1px solid #bbb;border-radius:7px;font-size:16px;margin-bottom:8px}.addBtn{width:100%;background:#1565c0;color:#fff}.sectionTitle{font-size:18px;font-weight:bold;margin:15px 0 8px}.smallBtn{padding:8px;font-size:12px}.editBtn{background:#1976d2;color:#fff}.offBtn{background:#ef6c00;color:#fff}.onBtn{background:#2e7d32;color:#fff}.hidden{display:none}.footer{text-align:center;color:#777;font-size:12px;padding:20px}
+@media(max-width:600px){.student-top,.manageRow{flex-wrap:wrap}.name,.manageName{min-width:calc(100% - 40px)}.status{margin-left:40px}.smallBtn{margin-left:38px}}
+</style>
+</head>
+<body>
+<header><h1>📋 Class Attendance</h1><div id="date"></div></header>
+<div class="container">
+<div class="tabs"><button id="todayTab" class="tab active" onclick="showPage('today')">📋 Today</button><button id="studentsTab" class="tab" onclick="showPage('students')">👥 Students</button></div>
+<div id="todayPage">
+<div class="summary"><div class="box present"><strong id="presentCount">0</strong>Present</div><div class="box absent"><strong id="absentCount">0</strong>Absent</div><div class="box late"><strong id="lateCount">0</strong>Late</div></div>
+<div class="actions"><button class="whatsapp" onclick="generateWhatsApp()">📱 WhatsApp Message</button><button class="reset" onclick="resetToday()">🔄 Reset Today</button></div>
+<div id="studentList"></div><textarea id="messageBox" readonly style="display:none"></textarea>
+</div>
+<div id="studentsPage" class="hidden">
+<div class="addBox"><div class="sectionTitle">➕ Add Student</div><input id="newStudentName" placeholder="Enter student name"><button class="addBtn" onclick="addStudent()">➕ Add Student</button></div>
+<div class="sectionTitle">👥 Active Students</div><div id="activeStudents"></div>
+<div class="sectionTitle">🟠 Deactivated Students</div><div id="inactiveStudents"></div>
+</div></div>
+<div class="footer">Attendance is automatically saved on this device.</div>
+<script>
+const SK='classAttendanceStudents',HK='classAttendanceHistory';
+const defaultStudents=["Beldar Aqsa Mehamud Kha","Bhoi Dhanshree Bhatu","Bhoi Sakshi Manoj","Dusane Krisha Sanjay","Gavit Anjal Vilesh","Gavit Aradhana Anil","Gavit Jagruti Ravindra","Gavit Rajvi Sulesh","Girase Tanavi Rupsing","Jadhav Rishika Ranjit","Khairnar Aaditi Rohidas","Kokani Kalyani Lalsing","Lad Yashashree Prathamesh","Marathe Kaveri Ashwin","Mavchi Renuka Suresh","Mins Swara Sunil","Pathan Anam Imraan","Pathan Shifa Sohelkhan","Pathan Suhana Sohel","Patil Devanshi Mahendra","Patil Kinjal Mayur","Patil Yashasvi Vishal","Pawar Apurva Dipak","Shaikh Jainab Wasim","Sonawane Vansika Sagar","Valvi Krushika Vikas","Ahire Gajendra Mahendra","Ahire Harshal Hiru","Bagwan Roman Abdul Aziz","Bhoi Aayush Nagesh","Bhoi Manthan Pankaj","Bhoi Pratik Dilip","Bhoye Bhushan Rohidas","Gavit Aarov Habel","Gavit Aarush Rahul","Gavit Aaryan Mehaman","Gavit Arpit Vishnu","Gavit Jigar Jivan","Gavit Madhur Ravindra","Gavit Preyars Suresh","Gavit Priyans Suhas","Gavit Shreyash Sanjay","Gavit Smit Sanjay","Gavit Tejas Dinesh","Gavit Tejas Kushal","Gosavi Aayush Savan","Hire Sarthak Anant","Jadhav Kartikkumar Sanjaykumar","Kokani Samarth Hemant","Lohiya Arhan Shahrukh","Makrani Avesh Aziz","Mavchi Abhimanyu Vilesh","Mavchi Paresh Harish","Mavchi Prince Naresh","Mavchi Prince Ravish","More Sarthak Sanjay","Paradhi Toshit Bhaiyya","Pardeshi Aarav Yogesh","Pathan Moh. Affan Ibrahim","Patil Prakash Ketan","Patil Vedant Jitendra","Pawar Tanmay Pralhad","Sain Ridhansh Dharmeshkumar","Shaikh Samar Rafik","Shaikh Zaid Mohsinoddin","Sonavane Shivraj Girish","Tidke Yash Balasaheb","Valvi Mohit Umesh","Valvi Saksham Rahul","Valvi Varun Vipul","Wadekar Aryan Ravindra","Wagh Laksh Lalit"];
+let students=JSON.parse(localStorage.getItem(SK)||'null');
+if(!students){students=defaultStudents.map((name,i)=>({id:'s'+(i+1),name,active:true}));localStorage.setItem(SK,JSON.stringify(students))}
+let history=JSON.parse(localStorage.getItem(HK)||'{}'),today=key();
+document.getElementById('date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+function key(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function save(){localStorage.setItem(SK,JSON.stringify(students));localStorage.setItem(HK,JSON.stringify(history))}
+function data(){if(!history[today])history[today]={status:{},remark:{}};students.filter(s=>s.active).forEach(s=>{if(!history[today].status[s.id])history[today].status[s.id]='Present';if(history[today].remark[s.id]===undefined)history[today].remark[s.id]=''});save();return history[today]}
+function streak(id,status){let n=1;Object.keys(history).filter(x=>x<today).sort().reverse().some(d=>{if(history[d]?.status?.[id]===status){n++;return false}return true});return n}
+function createStudents(){let box=document.getElementById('studentList');box.innerHTML='';let d=data();students.filter(s=>s.active).forEach((s,i)=>{let card=document.createElement('div');card.className='student';let top=document.createElement('div');top.className='student-top';let num=document.createElement('div');num.className='number';num.textContent=i+1;let name=document.createElement('div');name.className='name';name.textContent=s.name;let sel=document.createElement('select');sel.className='status';['Present','Absent','Late'].forEach(v=>{let o=document.createElement('option');o.value=o.textContent=v;sel.appendChild(o)});sel.value=d.status[s.id]||'Present';let rem=document.createElement('select');rem.className='remark';['Without Permission','With Permission','Sick / Medical','Family / Personal Reason','Transport / Travel','Other'].forEach(v=>{let o=document.createElement('option');o.value=o.textContent=v;rem.appendChild(o)});rem.value=d.remark[s.id]||'Without Permission';let st=document.createElement('div');st.className='streak';top.append(num,name,sel);card.append(top,rem,st);box.appendChild(card);
+function upd(){let v=sel.value;d.status[s.id]=v;if(v==='Absent'){rem.style.display='block';if(!d.remark[s.id]){d.remark[s.id]='Without Permission';rem.value='Without Permission'}let n=streak(s.id,'Absent');st.textContent=n>1?'⚠️ Absent – Since '+n+' days':'⚠️ Absent today'}else if(v==='Late'){rem.style.display='none';d.remark[s.id]='';let n=streak(s.id,'Late');st.textContent=n>1?'⏰ Daily Late – Since '+n+' days':'⏰ Late today'}else{rem.style.display='none';d.remark[s.id]='';st.textContent=''}save();summary()}sel.onchange=upd;rem.onchange=()=>{d.remark[s.id]=rem.value;save()};upd()})}
+function summary(){let d=data(),p=0,a=0,l=0;students.filter(s=>s.active).forEach(s=>{let v=d.status[s.id]||'Present';if(v==='Present')p++;if(v==='Absent')a++;if(v==='Late')l++});presentCount.textContent=p;absentCount.textContent=a;lateCount.textContent=l}
+function generateWhatsApp(){let d=data(),a=[],l=[];students.filter(s=>s.active).forEach(s=>{let v=d.status[s.id];if(v==='Absent'){let n=streak(s.id,'Absent');a.push(s.name+' — '+(d.remark[s.id]||'Without Permission')+(n>1?' — Absent Since '+n+' days':''))}if(v==='Late'){let n=streak(s.id,'Late');l.push(s.name+(n>1?' — Daily Late Since '+n+' days':' — Late'))}});let m='📋 Class Attendance\n📅 '+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'\n\n';if(a.length)m+='❌ ABSENT ('+a.length+')\n'+a.map((x,i)=>(i+1)+'. '+x).join('\n')+'\n\n';if(l.length)m+='⏰ LATE ('+l.length+')\n'+l.map((x,i)=>(i+1)+'. '+x).join('\n')+'\n\n';if(!a.length&&!l.length)m+='✅ All students are Present.\n';messageBox.style.display='block';messageBox.value=m;if(navigator.share)navigator.share({title:'Class Attendance',text:m}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(m)}
+function resetToday(){if(!confirm("Reset today's attendance to Present?"))return;history[today]={status:{},remark:{}};data();createStudents();summary();messageBox.style.display='none'}
+function showPage(p){todayPage.classList.toggle('hidden',p!=='today');studentsPage.classList.toggle('hidden',p!=='students');todayTab.classList.toggle('active',p==='today');studentsTab.classList.toggle('active',p==='students');if(p==='students')renderStudents()}
+function renderStudents(){activeStudents.innerHTML='';inactiveStudents.innerHTML='';students.forEach((s,i)=>{let row=document.createElement('div');row.className='studentManage';let r=document.createElement('div');r.className='manageRow';let n=document.createElement('div');n.className='manageNumber';n.textContent=i+1;let nm=document.createElement('div');nm.className='manageName';nm.textContent=s.name;let e=document.createElement('button');e.className='smallBtn editBtn';e.textContent='✏️ Edit';e.onclick=()=>editStudent(s.id);let b=document.createElement('button');b.className='smallBtn '+(s.active?'offBtn':'onBtn');b.textContent=s.active?'🟠 Deactivate':'🔄 Reactivate';b.onclick=()=>toggleStudent(s.id);r.append(n,nm,e,b);row.append(r);(s.active?activeStudents:inactiveStudents).append(row)});if(!inactiveStudents.children.length)inactiveStudents.innerHTML='<div style="color:#777;padding:8px">No deactivated students.</div>'}
+function addStudent(){let input=document.getElementById('newStudentName'),name=input.value.trim();if(!name)return alert('Please enter student name.');if(students.some(s=>s.name.toLowerCase()===name.toLowerCase()))return alert('This student already exists.');let s={id:'s'+Date.now(),name,active:true};students.push(s);data().status[s.id]='Present';data().remark[s.id]='';save();input.value='';renderStudents();createStudents();summary();alert(name+' added successfully.')}
+function editStudent(id){let s=students.find(x=>x.id===id),n=prompt('Edit student name:',s.name);if(n===null)return;n=n.trim();if(!n)return alert('Name cannot be empty.');s.name=n;save();renderStudents();createStudents()}
+function toggleStudent(id){let s=students.find(x=>x.id===id);if(s.active&&!confirm('Deactivate '+s.name+'?'))return;if(!s.active&&!confirm('Reactivate '+s.name+'?'))return;s.active=!s.active;data();if(s.active){history[today].status[s.id]='Present';history[today].remark[s.id]=''}save();renderStudents();createStudents();summary()}
+createStudents();summary();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js');
+</script>
+</body>
+</html>
