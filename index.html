@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1565c0">
+<link rel="manifest" href="./manifest.json">
 <title>Class Attendance</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
@@ -26,7 +26,7 @@ header{
 
 header h1{
   margin:0;
-  font-size:22px;
+  font-size:23px;
 }
 
 #date{
@@ -35,6 +35,394 @@ header h1{
 }
 
 .container{
+  max-width:900px;
+  margin:auto;
+  padding:12px;
+}
+
+.tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.tab{
+  background:white;
+  color:#1565c0;
+  border:2px solid #1565c0;
+  border-radius:9px;
+  padding:11px;
+  font-size:15px;
+  font-weight:bold;
+}
+
+.tab.active{
+  background:#1565c0;
+  color:white;
+}
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.box{
+  background:white;
+  border-radius:10px;
+  padding:12px 5px;
+  text-align:center;
+  box-shadow:0 1px 5px #ccc;
+}
+
+.box strong{
+  display:block;
+  font-size:22px;
+}
+
+.present strong{color:#16803c}
+.absent strong{color:#d32f2f}
+.late strong{color:#e65100}
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+button{
+  border:0;
+  border-radius:8px;
+  padding:12px 8px;
+  font-size:15px;
+  font-weight:bold;
+}
+
+.whatsapp{
+  background:#25d366;
+  color:white;
+}
+
+.reset{
+  background:#555;
+  color:white;
+}
+
+.student{
+  background:white;
+  margin-bottom:8px;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 1px 4px #ddd;
+}
+
+.student-top{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.number{
+  min-width:32px;
+  font-weight:bold;
+  color:#555;
+}
+
+.name{
+  flex:1;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.status{
+  width:110px;
+  padding:8px 5px;
+  border-radius:7px;
+  border:1px solid #bbb;
+  font-size:14px;
+}
+
+.remark{
+  margin-top:8px;
+  width:100%;
+  padding:8px;
+  border-radius:7px;
+  border:1px solid #ccc;
+  display:none;
+}
+
+.streak{
+  margin-top:5px;
+  font-size:12px;
+  color:#e65100;
+  font-weight:bold;
+}
+
+#messageBox{
+  width:100%;
+  min-height:180px;
+  margin-top:12px;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  display:none;
+}
+
+.studentManage{
+  background:white;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:9px;
+  box-shadow:0 1px 4px #ddd;
+}
+
+.manageRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.manageNumber{
+  min-width:30px;
+  color:#777;
+  font-weight:bold;
+}
+
+.manageName{
+  flex:1;
+  font-weight:bold;
+}
+
+.smallBtn{
+  padding:8px 9px;
+  font-size:13px;
+}
+
+.editBtn{
+  background:#1976d2;
+  color:white;
+}
+
+.offBtn{
+  background:#ef6c00;
+  color:white;
+}
+
+.onBtn{
+  background:#2e7d32;
+  color:white;
+}
+
+.addBox{
+  background:white;
+  padding:14px;
+  border-radius:10px;
+  margin-bottom:12px;
+  box-shadow:0 1px 4px #ddd;
+}
+
+.addBox input{
+  width:100%;
+  padding:11px;
+  border:1px solid #bbb;
+  border-radius:7px;
+  font-size:16px;
+  margin-bottom:8px;
+}
+
+.addBtn{
+  width:100%;
+  background:#1565c0;
+  color:white;
+}
+
+.sectionTitle{
+  font-size:18px;
+  font-weight:bold;
+  margin:15px 0 8px;
+}
+
+.hidden{
+  display:none;
+}
+
+.footer{
+  text-align:center;
+  color:#777;
+  font-size:12px;
+  padding:20px;
+}
+
+@media(max-width:600px){
+  .student-top{
+    flex-wrap:wrap;
+  }
+
+  .name{
+    min-width:calc(100% - 40px);
+  }
+
+  .status{
+    margin-left:40px;
+    width:120px;
+  }
+
+  .manageRow{
+    flex-wrap:wrap;
+  }
+
+  .manageName{
+    min-width:calc(100% - 40px);
+  }
+
+  .smallBtn{
+    margin-left:38px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📋 Class Attendance</h1>
+  <div id="date"></div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" id="todayTab" onclick="showPage('today')">
+      📋 Today
+    </button>
+
+    <button class="tab" id="studentsTab" onclick="showPage('students')">
+      👥 Students
+    </button>
+  </div>
+
+  <!-- TODAY PAGE -->
+  <div id="todayPage">
+
+    <div class="summary">
+      <div class="box present">
+        <strong id="presentCount">0</strong>
+        Present
+      </div>
+
+      <div class="box absent">
+        <strong id="absentCount">0</strong>
+        Absent
+      </div>
+
+      <div class="box late">
+        <strong id="lateCount">0</strong>
+        Late
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="whatsapp" onclick="generateWhatsApp()">
+        📱 WhatsApp Message
+      </button>
+
+      <button class="reset" onclick="resetToday()">
+        🔄 Reset Today
+      </button>
+    </div>
+
+    <div id="studentList"></div>
+
+    <textarea id="messageBox" readonly></textarea>
+
+  </div>
+
+  <!-- STUDENTS PAGE -->
+  <div id="studentsPage" class="hidden">
+
+    <div class="addBox">
+
+      <div class="sectionTitle">➕ Add Student</div>
+
+      <input
+        id="newStudentName"
+        type="text"
+        placeholder="Enter student name"
+      >
+
+      <button class="addBtn" onclick="addStudent()">
+        ➕ Add Student
+      </button>
+
+    </div>
+
+    <div class="sectionTitle">
+      👥 Active Students
+    </div>
+
+    <div id="activeStudents"></div>
+
+    <div class="sectionTitle">
+      🟠 Deactivated Students
+    </div>
+
+    <div id="inactiveStudents"></div>
+
+  </div>
+
+</div>
+
+<div class="footer">
+  Attendance is automatically saved on this device.
+</div>
+
+<script>
+
+const STORAGE_KEY = "classAttendanceHistory";
+const STUDENTS_KEY = "classAttendanceStudents";
+
+const defaultStudents = [
+"Beldar Aqsa Mehamud Kha",
+"Bhoi Dhanshree Bhatu",
+"Bhoi Sakshi Manoj",
+"Dusane Krisha Sanjay",
+"Gavit Anjal Vilesh",
+"Gavit Aradhana Anil",
+"Gavit Jagruti Ravindra",
+"Gavit Rajvi Sulesh",
+"Girase Tanavi Rupsing",
+"Jadhav Rishika Ranjit",
+"Khairnar Aaditi Rohidas",
+"Kokani Kalyani Lalsing",
+"Lad Yashashree Prathamesh",
+"Marathe Kaveri Ashwin",
+"Mavchi Renuka Suresh",
+"Mins Swara Sunil",
+"Pathan Anam Imraan",
+"Pathan Shifa Sohelkhan",
+"Pathan Suhana Sohel",
+"Patil Devanshi Mahendra",
+"Patil Kinjal Mayur",
+"Patil Yashasvi Vishal",
+"Pawar Apurva Dipak",
+"Shaikh Jainab Wasim",
+"Sonawane Vansika Sagar",
+"Valvi Krushika Vikas",
+"Ahire Gajendra Mahendra",
+"Ahire Harshal Hiru",
+"Bagwan Roman Abdul Aziz",
+"Bhoi Aayush Nagesh",
+"Bhoi Manthan Pankaj",
+"Bhoi Pratik Dilip",
+"Bhoye Bhushan Rohidas",
+"Gavit Aarov Habel",
+"Gavit Aarush Rahul",
+"Gavit Aaryan Mehaman",
+"Gavit Arpit Vishnu",
+"Gavit Jigar J.container{
   max-width:900px;
   margin:auto;
   padding:12px;
@@ -263,6 +651,7 @@ const students = [
 "Gavit Arpit Vishnu",
 "Gavit Jigar Jivan",
 "Gavit Madhur Ravindra",
+"Gavit Pranav Sandip",
 "Gavit Preyars Suresh",
 "Gavit Priyans Suhas",
 "Gavit Shreyash Sanjay",
@@ -274,7 +663,6 @@ const students = [
 "Jadhav Kartikkumar Sanjaykumar",
 "Kokani Samarth Hemant",
 "Lohiya Arhan Shahrukh",
-"Makrani Avesh Aziz",
 "Mavchi Abhimanyu Vilesh",
 "Mavchi Paresh Harish",
 "Mavchi Prince Naresh",
