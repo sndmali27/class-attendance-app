@@ -1116,6 +1116,15 @@ createStudents();
 updateScreen();
 
 </script>
+<script>
+const manifestLink = document.createElement("link");
+manifestLink.rel = "manifest";
+manifestLink.href = "./manifest.json";
+document.head.appendChild(manifestLink);
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js");
+}
+</script>
 </body>
 </html>
