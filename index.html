@@ -6,35 +6,169 @@
 <title>Class Attendance</title>
 
 <style>
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
 
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  color: #222;
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  color:#222;
 }
 
-header {
-  background: #1565c0;
-  color: white;
-  padding: 18px;
-  text-align: center;
+header{
+  background:#1565c0;
+  color:white;
+  padding:18px 12px;
+  text-align:center;
 }
 
-header h1 {
-  margin: 0;
-  font-size: 22px;
+header h1{
+  margin:0;
+  font-size:22px;
 }
 
-.date {
-  margin-top: 6px;
-  font-size: 14px;
+#date{
+  margin-top:6px;
+  font-size:14px;
 }
 
-.container {
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:12px;
+}
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.box{
+  background:white;
+  border-radius:10px;
+  padding:12px 5px;
+  text-align:center;
+  box-shadow:0 1px 5px #ccc;
+}
+
+.box strong{
+  display:block;
+  font-size:22px;
+}
+
+.present strong{color:#16803c;}
+.absent strong{color:#d32f2f;}
+.late strong{color:#e65100;}
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+button{
+  border:0;
+  border-radius:8px;
+  padding:13px 8px;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.whatsapp{
+  background:#25d366;
+  color:white;
+}
+
+.reset{
+  background:#555;
+  color:white;
+}
+
+.student{
+  background:white;
+  margin-bottom:8px;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 1px 4px #ddd;
+}
+
+.student-top{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.number{
+  min-width:32px;
+  font-weight:bold;
+  color:#555;
+}
+
+.name{
+  flex:1;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.status{
+  width:105px;
+  padding:8px 5px;
+  border-radius:7px;
+  border:1px solid #bbb;
+  font-size:14px;
+}
+
+.remark{
+  margin-top:8px;
+  width:100%;
+  padding:8px;
+  border-radius:7px;
+  border:1px solid #ccc;
+  display:none;
+}
+
+.streak{
+  margin-top:5px;
+  font-size:12px;
+  color:#e65100;
+  font-weight:bold;
+}
+
+#messageBox{
+  width:100%;
+  min-height:180px;
+  margin-top:12px;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  display:none;
+  font-family:Arial,sans-serif;
+}
+
+.footer{
+  text-align:center;
+  color:#777;
+  font-size:12px;
+  padding:20px;
+}
+
+@media(max-width:600px){
+  .student-top{
+    flex-wrap:wrap;
+  }
+
+  .name{
+    min-width:calc(100% - 40px);
+  }
+
+  .status{
+   .container {
   padding: 12px;
   max-width: 700px;
   margin: auto;
