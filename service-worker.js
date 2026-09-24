@@ -1,4 +1,4 @@
-const CACHE_NAME = "class-attendance-v1";
+const CACHE_NAME = "class-attendance-v2";
 
 const FILES_TO_CACHE = [
   "./",
