@@ -2,6 +2,8 @@ package com.sndmali27.classattendance;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.content.Intent;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebResourceRequest;
@@ -30,6 +32,17 @@ public class MainActivity extends Activity {
                 new WebViewAssetLoader.Builder()
                         .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
                         .build();
+
+        webView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public void shareText(String text) {
+                Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                sendIntent.setType("text/plain");
+                sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+                Intent chooser = Intent.createChooser(sendIntent, "Share Attendance");
+                startActivity(chooser);
+            }
+        }, "AndroidShare");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
