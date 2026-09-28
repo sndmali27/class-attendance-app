@@ -7,7 +7,7 @@ import android.webkit.WebView;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import androidx.webkit.WebViewAssetLoader;
-import androidx.webkit.WebViewClient;
+import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
     private WebView webView;
