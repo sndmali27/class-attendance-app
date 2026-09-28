@@ -200,13 +200,12 @@ active.forEach(s=>{
 const v=d.status[s.id];
 if(v==='Absent'){
 const n=streak(s.id,'Absent');
-let x=s.name+' — '+(d.remark[s.id]||'Without Permission');
-if(n>1)x+=' — Absent Since '+n+' days';
-a.push(x);
+const r=d.remark[s.id]||'Without Permission';
+a.push({name:s.name,remark:r,days:n});
 }
 if(v==='Late'){
 const n=streak(s.id,'Late');
-l.push(s.name+(n>1?' — Daily Late Since '+n+' days':' — Late'));
+l.push({name:s.name,days:n});
 }
 });
 
@@ -218,13 +217,26 @@ if(a.length){
 m+='━━━━━━━━━━━━━━━━━━\n';
 m+='❌ *ABSENT — '+a.length+'*\n';
 m+='━━━━━━━━━━━━━━━━━━\n';
-m+=a.map((x,i)=>(i+1)+'️⃣ '+x).join('\n')+'\n\n';
+a.forEach((x,i)=>{
+  m+=(i+1)+'️⃣ *'+x.name+'*\n';
+  m+='   ⚠️ '+x.remark;
+  if(x.days>1)m+=' | Absent '+x.days+' days';
+  m+='\n';
+});
+m+='\n';
 }
+
 if(l.length){
 m+='━━━━━━━━━━━━━━━━━━\n';
 m+='⏰ *LATE — '+l.length+'*\n';
 m+='━━━━━━━━━━━━━━━━━━\n';
-m+=l.map((x,i)=>(i+1)+'️⃣ '+x).join('\n')+'\n\n';
+l.forEach((x,i)=>{
+  m+=(i+1)+'️⃣ *'+x.name+'*';
+  if(x.days>1)m+=' | Daily Late '+x.days+' days';
+  else m+=' | Late';
+  m+='\n';
+});
+m+='\n';
 }
 
 m+='━━━━━━━━━━━━━━━━━━\n';
