@@ -13,7 +13,7 @@ header{background:#1565c0;color:#fff;text-align:center;padding:18px 10px}
 h1{margin:0;font-size:25px}#date{margin-top:6px}
 .container{max-width:900px;margin:auto;padding:12px}
 .tabs,.summary,.actions{display:grid;gap:8px}
-.tabs{grid-template-columns:1fr 1fr;margin-bottom:12px}
+.tabs{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
 .tab{padding:12px;border:2px solid #1565c0;border-radius:9px;background:#fff;color:#1565c0;font-weight:bold;font-size:16px}
 .tab.active{background:#1565c0;color:#fff}
 .summary{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
@@ -45,6 +45,7 @@ button{border:0;border-radius:9px;padding:13px 8px;font-size:15px;font-weight:bo
 <div class="tabs">
 <button id="todayTab" class="tab active" onclick="showPage('today')">📋 Today</button>
 <button id="studentsTab" class="tab" onclick="showPage('students')">👥 Students</button>
+<button id="settingsTab" class="tab" onclick="showPage('settings')">⚙️ Settings</button>
 </div>
 
 <div id="todayPage">
@@ -72,12 +73,45 @@ button{border:0;border-radius:9px;padding:13px 8px;font-size:15px;font-weight:bo
 <div class="sectionTitle">🟠 Deactivated Students</div>
 <div id="inactiveStudents"></div>
 </div>
+
+<div id="settingsPage" class="hidden">
+<div class="addBox">
+<div class="sectionTitle">⚙️ Class Settings</div>
+<label style="display:block;margin:8px 0 4px;font-weight:bold">Class Name</label>
+<input id="classNameInput" placeholder="Example: 5-A">
+<label style="display:block;margin:8px 0 4px;font-weight:bold">School Name</label>
+<input id="schoolNameInput" placeholder="Optional">
+<label style="display:block;margin:8px 0 4px;font-weight:bold">Teacher Name</label>
+<input id="teacherNameInput" placeholder="Optional">
+<button class="addBtn" onclick="saveSettings()">💾 Save Settings</button>
+</div>
+
+<div class="addBox">
+<div class="sectionTitle">📥 Import Students</div>
+<div style="color:#555;font-size:13px;margin-bottom:8px">
+Import a CSV or TXT file. Excel files can be saved as <b>CSV</b> first.
+</div>
+<input id="studentFile" type="file" accept=".csv,.txt,text/csv,text/plain" style="margin-bottom:8px">
+<button class="addBtn" onclick="importStudents()">📥 Import Student List</button>
+<div style="color:#777;font-size:12px;margin-top:8px">
+Tip: CSV can contain Sr.No and Student Name columns, or simply one student name per row.
+</div>
+</div>
+
+<div class="addBox">
+<div class="sectionTitle">📋 Paste Student Names</div>
+<textarea id="pasteStudents" placeholder="Paste one student name per line" style="width:100%;min-height:120px;padding:10px;border:1px solid #bbb;border-radius:7px;font-size:15px"></textarea>
+<button class="addBtn" onclick="importPastedStudents()">➕ Add Pasted Students</button>
+</div>
+</div>
+
 </div>
 <div class="footer">Attendance is automatically saved on this device.</div>
 
 <script>
 const SK='classAttendanceStudents';
 const HK='classAttendanceHistory';
+const SETK='classAttendanceSettings';
 
 const defaultStudents=[
 "Beldar Aqsa Mehamud Kha","Bhoi Dhanshree Bhatu","Bhoi Sakshi Manoj","Dusane Krisha Sanjay",
@@ -106,6 +140,7 @@ students=defaultStudents.map((name,i)=>({id:'s'+(i+1),name,active:true}));
 localStorage.setItem(SK,JSON.stringify(students));
 }
 let history=JSON.parse(localStorage.getItem(HK)||'{}');
+let settings=JSON.parse(localStorage.getItem(SETK)||'null')||{className:'5-A',schoolName:'',teacherName:''};
 let today=key();
 
 date.textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
@@ -210,7 +245,9 @@ l.push({name:s.name,days:n});
 });
 
 const present=active.length-a.length-l.length;
-let m='📋 *CLASS ATTENDANCE — 5-A*\n';
+let m='📋 *CLASS ATTENDANCE — '+settings.className+'*\n';
+if(settings.schoolName)m+='🏫 '+settings.schoolName+'\n';
+if(settings.teacherName)m+='👨‍🏫 '+settings.teacherName+'\n';
 m+='📅 *'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'*\n\n';
 
 if(a.length){
@@ -250,8 +287,69 @@ m+='━━━━━━━━━━━━━━━━━━\n';
 m+='📌 *Attendance updated for today.*';
 
 messageBox.style.display='block';messageBox.value=m;
-if(navigator.share)navigator.share({title:'Class Attendance — 5-A',text:m}).catch(()=>{});
+if(navigator.share)navigator.share({title:'Class Attendance — '+settings.className,text:m}).catch(()=>{});
 else if(navigator.clipboard)navigator.clipboard.writeText(m);
+}
+
+function saveSettings(){
+settings.className=(document.getElementById('classNameInput').value.trim()||'My Class');
+settings.schoolName=document.getElementById('schoolNameInput').value.trim();
+settings.teacherName=document.getElementById('teacherNameInput').value.trim();
+localStorage.setItem(SETK,JSON.stringify(settings));
+alert('Settings saved successfully.');
+}
+
+function loadSettings(){
+document.getElementById('classNameInput').value=settings.className||'';
+document.getElementById('schoolNameInput').value=settings.schoolName||'';
+document.getElementById('teacherNameInput').value=settings.teacherName||'';
+}
+
+function addImportedNames(names){
+const clean=[];
+names.forEach(n=>{
+n=String(n).replace(/^\uFEFF/,'').trim();
+if(!n)return;
+if(/^sr\.?\s*no|^serial|^roll\s*no|^student\s*name|^name$/i.test(n))return;
+const parts=n.split(',').map(x=>x.trim()).filter(Boolean);
+let name=parts.length>1 ? parts[parts.length-1] : n;
+name=name.replace(/^\d+[.)-]?\s*/,'').trim();
+if(name)clean.push(name);
+});
+const unique=[...new Set(clean.map(x=>x.toLowerCase()))].map(k=>clean.find(x=>x.toLowerCase()===k));
+let added=0;
+unique.forEach(name=>{
+if(!students.some(s=>s.name.toLowerCase()===name.toLowerCase())){
+const id='s'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+students.push({id,name,active:true});
+data().status[id]='Present';data().remark[id]='';added++;
+}
+});
+save();renderStudents();createStudents();summary();
+return added;
+}
+
+function importPastedStudents(){
+const box=document.getElementById('pasteStudents');
+const names=box.value.split(/\r?\n/);
+const added=addImportedNames(names);
+if(added){box.value='';alert(added+' students imported successfully.');}
+else alert('No new student names found.');
+}
+
+function importStudents(){
+const input=document.getElementById('studentFile');
+if(!input.files.length)return alert('Please select a CSV or TXT file first.');
+const file=input.files[0];
+const reader=new FileReader();
+reader.onload=()=>{
+const text=reader.result||'';
+const names=text.split(/\r?\n/);
+const added=addImportedNames(names);
+if(added){input.value='';alert(added+' students imported successfully.');}
+else alert('No new student names found. Check the file format.');
+};
+reader.readAsText(file);
 }
 
 function resetToday(){
@@ -262,9 +360,12 @@ history[today]={status:{},remark:{}};data();createStudents();summary();messageBo
 function showPage(p){
 todayPage.classList.toggle('hidden',p!=='today');
 studentsPage.classList.toggle('hidden',p!=='students');
+settingsPage.classList.toggle('hidden',p!=='settings');
 todayTab.classList.toggle('active',p==='today');
 studentsTab.classList.toggle('active',p==='students');
+settingsTab.classList.toggle('active',p==='settings');
 if(p==='students')renderStudents();
+if(p==='settings')loadSettings();
 }
 
 function renderStudents(){
