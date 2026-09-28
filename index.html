@@ -194,7 +194,9 @@ presentCount.textContent=p;absentCount.textContent=a;lateCount.textContent=l;
 
 function generateWhatsApp(){
 const d=data(),a=[],l=[];
-students.filter(s=>s.active).forEach(s=>{
+const active=students.filter(s=>s.active);
+
+active.forEach(s=>{
 const v=d.status[s.id];
 if(v==='Absent'){
 const n=streak(s.id,'Absent');
@@ -207,12 +209,36 @@ const n=streak(s.id,'Late');
 l.push(s.name+(n>1?' — Daily Late Since '+n+' days':' — Late'));
 }
 });
-let m='📋 Class Attendance\n📅 '+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'\n\n';
-if(a.length)m+='❌ ABSENT ('+a.length+')\n'+a.map((x,i)=>(i+1)+'. '+x).join('\n')+'\n\n';
-if(l.length)m+='⏰ LATE ('+l.length+')\n'+l.map((x,i)=>(i+1)+'. '+x).join('\n')+'\n\n';
-if(!a.length&&!l.length)m+='✅ All students are Present.\n';
+
+const present=active.length-a.length-l.length;
+let m='📋 *CLASS ATTENDANCE — 5-A*\n';
+m+='📅 *'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'*\n\n';
+
+if(a.length){
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+='❌ *ABSENT — '+a.length+'*\n';
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+=a.map((x,i)=>(i+1)+'️⃣ '+x).join('\n')+'\n\n';
+}
+if(l.length){
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+='⏰ *LATE — '+l.length+'*\n';
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+=l.map((x,i)=>(i+1)+'️⃣ '+x).join('\n')+'\n\n';
+}
+
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+='📊 *TODAY’S SUMMARY*\n';
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+='👥 Total Students: '+active.length+'\n';
+m+='✅ Present: '+present+'\n';
+m+='❌ Absent: '+a.length+'\n';
+m+='⏰ Late: '+l.length+'\n';
+m+='━━━━━━━━━━━━━━━━━━\n';
+m+='📌 *Attendance updated for today.*';
+
 messageBox.style.display='block';messageBox.value=m;
-if(navigator.share)navigator.share({title:'Class Attendance',text:m}).catch(()=>{});
+if(navigator.share)navigator.share({title:'Class Attendance — 5-A',text:m}).catch(()=>{});
 else if(navigator.clipboard)navigator.clipboard.writeText(m);
 }
 
