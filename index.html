@@ -287,8 +287,16 @@ m+='━━━━━━━━━━━━━━━━━━\n';
 m+='📌 *Attendance updated for today.*';
 
 messageBox.style.display='block';messageBox.value=m;
-if(navigator.share)navigator.share({title:'Class Attendance — '+settings.className,text:m}).catch(()=>{});
-else if(navigator.clipboard)navigator.clipboard.writeText(m);
+
+// Android APK: open the real Android Share Sheet (WhatsApp, Messages, Gmail, etc.)
+if(window.AndroidShare && typeof window.AndroidShare.shareText==='function'){
+  window.AndroidShare.shareText(m);
+}else if(navigator.share){
+  navigator.share({title:'Class Attendance — '+settings.className,text:m}).catch(()=>{});
+}else if(navigator.clipboard){
+  navigator.clipboard.writeText(m);
+  alert('Message copied. You can paste it in WhatsApp.');
+}
 }
 
 function saveSettings(){
