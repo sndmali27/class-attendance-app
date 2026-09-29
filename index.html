@@ -2,422 +2,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#1565c0">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f5bd7">
 <link rel="manifest" href="./manifest.json">
 <title>Class Attendance</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#222}
-header{background:#1565c0;color:#fff;text-align:center;padding:18px 10px}
-h1{margin:0;font-size:25px}#date{margin-top:6px}
-.container{max-width:900px;margin:auto;padding:12px}
-.tabs,.summary,.actions{display:grid;gap:8px}
-.tabs{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
-.tab{padding:12px;border:2px solid #1565c0;border-radius:9px;background:#fff;color:#1565c0;font-weight:bold;font-size:16px}
-.tab.active{background:#1565c0;color:#fff}
-.summary{grid-template-columns:repeat(3,1fr);margin-bottom:12px}
-.box{background:#fff;border-radius:10px;padding:12px 4px;text-align:center;box-shadow:0 1px 5px #ccc}
-.box strong{display:block;font-size:23px}
-.present strong{color:#16803c}.absent strong{color:#d32f2f}.late strong{color:#e65100}
-.actions{grid-template-columns:1fr 1fr;margin-bottom:12px}
-button{border:0;border-radius:9px;padding:13px 8px;font-size:15px;font-weight:bold}
-.whatsapp{background:#25d366;color:#fff}.reset{background:#555;color:#fff}
-.student,.studentManage,.addBox{background:#fff;margin-bottom:8px;padding:12px;border-radius:10px;box-shadow:0 1px 4px #ddd}
-.student-top,.manageRow{display:flex;align-items:center;gap:8px}
-.number,.manageNumber{min-width:32px;color:#555;font-weight:bold}
-.name,.manageName{flex:1;font-weight:bold}
-.status{width:115px;padding:8px;border-radius:7px;border:1px solid #bbb;font-size:14px}
-.remark{display:none;margin-top:8px;width:100%;padding:8px;border-radius:7px;border:1px solid #ccc}
-.streak{margin-top:5px;font-size:12px;color:#e65100;font-weight:bold}
-.addBox input{width:100%;padding:11px;border:1px solid #bbb;border-radius:7px;font-size:16px;margin-bottom:8px}
-.addBtn{width:100%;background:#1565c0;color:#fff}
-.sectionTitle{font-size:18px;font-weight:bold;margin:15px 0 8px}
-.smallBtn{padding:8px;font-size:12px}.editBtn{background:#1976d2;color:#fff}
-.offBtn{background:#ef6c00;color:#fff}.onBtn{background:#2e7d32;color:#fff}
-.hidden{display:none}.footer{text-align:center;color:#777;font-size:12px;padding:20px}
-@media(max-width:600px){.student-top,.manageRow{flex-wrap:wrap}.name,.manageName{min-width:calc(100% - 40px)}.status{margin-left:40px}}
+:root{--primary:#0f5bd7;--primary2:#1649a5;--bg:#f4f7fb;--card:#fff;--text:#142033;--muted:#667085;--green:#16803c;--red:#d92d20;--orange:#e76f00;--border:#e4e7ec}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,var(--primary2),var(--primary));color:#fff;padding:14px 14px 16px;box-shadow:0 3px 14px #12356a30}
+.headrow{display:flex;align-items:center;gap:10px}.back{display:none;background:#ffffff20;color:#fff;border:1px solid #ffffff35;border-radius:10px;padding:9px 11px;font-size:18px}.back.show{display:block}
+h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;margin-top:3px}.date{font-size:12px;opacity:.92;margin-top:6px}
+.container{max-width:760px;margin:auto;padding:12px 12px 28px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}.tab{padding:11px 6px;border:1px solid #d8e1f0;border-radius:12px;background:#fff;color:#31547f;font-weight:750;font-size:13px}.tab.active{background:#eaf2ff;border-color:#8bb1f3;color:var(--primary)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:13px 5px;text-align:center;box-shadow:0 4px 15px #1d35570a}.box strong{display:block;font-size:24px}.present strong{color:var(--green)}.absent strong{color:var(--red)}.late strong{color:var(--orange)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.btn{border:0;border-radius:12px;padding:12px 9px;font-size:14px;font-weight:800;min-height:44px}.whatsapp{background:#25d366;color:#fff}.reset{background:#344054;color:#fff}.primary{background:var(--primary);color:#fff}.danger{background:#d92d20;color:#fff}.secondary{background:#eef2f6;color:#344054}
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:13px;margin-bottom:9px;box-shadow:0 4px 15px #1d35570a}.student{display:grid;grid-template-columns:34px 1fr 112px;gap:8px;align-items:center}.number{font-weight:800;color:#667085}.name{font-weight:750;line-height:1.25}.status,.remark,input,textarea{font:inherit}.status,.remark,input{width:100%;padding:10px;border:1px solid #cfd7e3;border-radius:10px;background:#fff}.remark{display:none;margin-top:8px}.streak{font-size:12px;color:var(--orange);font-weight:750;margin-top:5px}.search{position:sticky;top:79px;z-index:10;margin-bottom:9px}.search input{padding:12px 14px;border-radius:13px;border:1px solid #cfd7e3;box-shadow:0 3px 12px #0000000a}
+.sectionTitle{font-size:17px;font-weight:850;margin:3px 0 10px}.muted{color:var(--muted);font-size:13px;line-height:1.45}.formlabel{display:block;font-size:12px;font-weight:800;color:#475467;margin:11px 0 5px}.forminput{margin-bottom:2px}.saveState{font-size:12px;font-weight:800;margin-top:8px;min-height:18px}.saved{color:var(--green)}.notSaved{color:var(--red)}
+.row{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.manage{display:grid;grid-template-columns:34px 1fr;gap:7px;align-items:start}.manageName{font-weight:750}.manageBtns{display:flex;gap:6px;margin-top:8px}.small{padding:8px 9px;font-size:12px;border-radius:9px}.edit{background:#1677d2;color:#fff}.deact{background:#f79009;color:#fff}.react{background:#2e7d32;color:#fff}.delete{background:#fee4e2;color:#b42318}
+.hidden{display:none!important}.empty{padding:24px 10px;text-align:center;color:var(--muted)}.notice{background:#eef5ff;border:1px solid #cfe0ff;color:#31547f;padding:12px;border-radius:13px;font-size:13px;margin-bottom:10px}.privacy{background:#f7f9fc;border:1px solid var(--border);padding:12px;border-radius:13px;font-size:12px;color:#667085;line-height:1.5}.footer{text-align:center;color:#98a2b3;font-size:11px;padding:18px 8px}
+.modal{position:fixed;inset:0;background:#10182880;z-index:100;display:flex;align-items:flex-end;justify-content:center}.modalBox{background:#fff;width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -8px 30px #0003}.modalBox h3{margin:0 0 12px}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:200;background:#101828;color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:750;box-shadow:0 5px 20px #0004;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
+@media(min-width:700px){.modal{align-items:center}.modalBox{border-radius:18px}.search{top:86px}}@media(max-width:520px){.student{grid-template-columns:28px 1fr}.status{grid-column:2}.tabs{position:sticky;top:74px;z-index:9}.manageBtns .small{flex:1}}
 </style>
 </head>
 <body>
-<header><h1>📋 Class Attendance</h1><div id="date"></div></header>
+<header>
+<div class="headrow"><button id="backBtn" class="back" onclick="goBack()">‹</button><div><h1>📋 Class Attendance</h1><div id="headerSub" class="subtitle">Simple • Smart • Teacher-Friendly</div></div></div>
+<div id="date" class="date"></div>
+</header>
 <div class="container">
-<div class="tabs">
+<div id="tabs" class="tabs">
 <button id="todayTab" class="tab active" onclick="showPage('today')">📋 Today</button>
 <button id="studentsTab" class="tab" onclick="showPage('students')">👥 Students</button>
 <button id="settingsTab" class="tab" onclick="showPage('settings')">⚙️ Settings</button>
 </div>
 
-<div id="todayPage">
-<div class="summary">
-<div class="box present"><strong id="presentCount">0</strong>Present</div>
-<div class="box absent"><strong id="absentCount">0</strong>Absent</div>
-<div class="box late"><strong id="lateCount">0</strong>Late</div>
-</div>
-<div class="actions">
-<button class="whatsapp" onclick="generateWhatsApp()">📱 WhatsApp Message</button>
-<button class="reset" onclick="resetToday()">🔄 Reset Today</button>
-</div>
-<div id="studentList"></div>
-<textarea id="messageBox" readonly style="display:none"></textarea>
+<section id="todayPage">
+<div id="noRoster" class="notice hidden">👋 <b>Welcome!</b> Add or import your student list first. Your attendance screen will appear here after students are added.</div>
+<div class="summary"><div class="box present"><strong id="presentCount">0</strong>Present</div><div class="box absent"><strong id="absentCount">0</strong>Absent</div><div class="box late"><strong id="lateCount">0</strong>Late</div></div>
+<div class="actions"><button class="btn whatsapp" onclick="generateWhatsApp()">📱 Share Attendance</button><button class="btn reset" onclick="resetToday()">🔄 Reset Today</button></div>
+<div class="search"><input id="searchInput" placeholder="🔎 Search student for quick marking..." oninput="renderAttendance()"></div>
+<div id="studentList"></div><textarea id="messageBox" readonly style="display:none;width:100%;min-height:160px"></textarea>
+</section>
+
+<section id="studentsPage" class="hidden">
+<button class="btn secondary" onclick="showPage('today')" style="width:100%;margin-bottom:10px">← Back to Attendance</button>
+<div class="card"><div class="sectionTitle">➕ Add Student</div><input id="newStudentName" class="forminput" placeholder="Enter full student name" maxlength="120"><button class="btn primary" onclick="addStudent()" style="width:100%;margin-top:8px">Add Student</button></div>
+<div class="card"><div class="sectionTitle">👥 Student List <span id="studentCountLabel" class="muted"></span></div><div id="activeStudents"></div></div>
+<div class="card"><div class="sectionTitle">🟠 Deactivated</div><div id="inactiveStudents"></div></div>
+</section>
+
+<section id="settingsPage" class="hidden">
+<button class="btn secondary" onclick="showPage('today')" style="width:100%;margin-bottom:10px">← Back to Attendance</button>
+<div class="card"><div class="sectionTitle">⚙️ Class Settings</div>
+<label class="formlabel">Class Name</label><input id="classNameInput" class="forminput" placeholder="Example: 5-A" maxlength="50">
+<label class="formlabel">School Name</label><input id="schoolNameInput" class="forminput" placeholder="Optional" maxlength="160">
+<label class="formlabel">Teacher Name</label><input id="teacherNameInput" class="forminput" placeholder="Optional" maxlength="100">
+<button class="btn primary" onclick="saveSettings()" style="width:100%;margin-top:10px">💾 Save Settings</button><div id="saveState" class="saveState"></div>
 </div>
 
-<div id="studentsPage" class="hidden">
-<div class="addBox">
-<div class="sectionTitle">➕ Add Student</div>
-<input id="newStudentName" placeholder="Enter student name">
-<button class="addBtn" onclick="addStudent()">➕ Add Student</button>
-</div>
-<div class="sectionTitle">👥 Active Students</div>
-<div id="activeStudents"></div>
-<div class="sectionTitle">🟠 Deactivated Students</div>
-<div id="inactiveStudents"></div>
+<div class="card"><div class="sectionTitle">📥 Student Import</div><div class="muted">Upload a <b>CSV or TXT</b> file. One student per line is recommended. CSV rows may contain Sr.No and Student Name.</div>
+<input id="studentFile" type="file" accept=".csv,.txt,text/csv,text/plain" style="margin:12px 0;width:100%">
+<button class="btn primary" onclick="importStudents()" style="width:100%">📥 Upload & Import</button><div id="importState" class="saveState"></div>
 </div>
 
-<div id="settingsPage" class="hidden">
-<div class="addBox">
-<div class="sectionTitle">⚙️ Class Settings</div>
-<label style="display:block;margin:8px 0 4px;font-weight:bold">Class Name</label>
-<input id="classNameInput" placeholder="Example: 5-A">
-<label style="display:block;margin:8px 0 4px;font-weight:bold">School Name</label>
-<input id="schoolNameInput" placeholder="Optional">
-<label style="display:block;margin:8px 0 4px;font-weight:bold">Teacher Name</label>
-<input id="teacherNameInput" placeholder="Optional">
-<button class="addBtn" onclick="saveSettings()">💾 Save Settings</button>
+<div class="card"><div class="sectionTitle">📋 Paste Student Names</div><textarea id="pasteStudents" placeholder="Paste one student name per line" style="width:100%;min-height:120px;padding:11px;border:1px solid #cfd7e3;border-radius:10px"></textarea><button class="btn primary" onclick="importPastedStudents()" style="width:100%;margin-top:8px">➕ Import Pasted Names</button></div>
+<div class="card"><div class="sectionTitle">🔐 Privacy & Security</div><div class="privacy">Student names and attendance are stored locally on this device. No student list is sent to a server by this app. Destructive actions require confirmation. Avoid sharing exported attendance messages with unintended recipients.</div></div>
+</section>
 </div>
+<div class="footer">Made with ❤️ for Teachers<br><b>Developed by Sandesh Mali</b><br>For educators, with respect and gratitude. 🙏</div>
 
-<div class="addBox">
-<div class="sectionTitle">📥 Import Students</div>
-<div style="color:#555;font-size:13px;margin-bottom:8px">
-Import a CSV or TXT file. Excel files can be saved as <b>CSV</b> first.
-</div>
-<input id="studentFile" type="file" accept=".csv,.txt,text/csv,text/plain" style="margin-bottom:8px">
-<button class="addBtn" onclick="importStudents()">📥 Import Student List</button>
-<div style="color:#777;font-size:12px;margin-top:8px">
-Tip: CSV can contain Sr.No and Student Name columns, or simply one student name per row.
-</div>
-</div>
-
-<div class="addBox">
-<div class="sectionTitle">📋 Paste Student Names</div>
-<textarea id="pasteStudents" placeholder="Paste one student name per line" style="width:100%;min-height:120px;padding:10px;border:1px solid #bbb;border-radius:7px;font-size:15px"></textarea>
-<button class="addBtn" onclick="importPastedStudents()">➕ Add Pasted Students</button>
-</div>
-</div>
-
-</div>
-<div class="footer">Attendance is automatically saved on this device.</div>
+<div id="editModal" class="modal hidden"><div class="modalBox"><h3>✏️ Edit Student</h3><input id="editNameInput" maxlength="120"><div class="row" style="margin-top:10px"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveEditedStudent()">Save Changes</button></div></div></div>
+<div id="toast" class="toast"></div>
 
 <script>
-const SK='classAttendanceStudents';
-const HK='classAttendanceHistory';
-const SETK='classAttendanceSettings';
-
-const defaultStudents=[
-"Beldar Aqsa Mehamud Kha","Bhoi Dhanshree Bhatu","Bhoi Sakshi Manoj","Dusane Krisha Sanjay",
-"Gavit Anjal Vilesh","Gavit Aradhana Anil","Gavit Jagruti Ravindra","Gavit Rajvi Sulesh",
-"Girase Tanavi Rupsing","Jadhav Rishika Ranjit","Khairnar Aaditi Rohidas","Kokani Kalyani Lalsing",
-"Lad Yashashree Prathamesh","Marathe Kaveri Ashwin","Mavchi Renuka Suresh","Mins Swara Sunil",
-"Pathan Anam Imraan","Pathan Shifa Sohelkhan","Pathan Suhana Sohel","Patil Devanshi Mahendra",
-"Patil Kinjal Mayur","Patil Yashasvi Vishal","Pawar Apurva Dipak","Shaikh Jainab Wasim",
-"Sonawane Vansika Sagar","Valvi Krushika Vikas","Ahire Gajendra Mahendra","Ahire Harshal Hiru",
-"Bagwan Roman Abdul Aziz","Bhoi Aayush Nagesh","Bhoi Manthan Pankaj","Bhoi Pratik Dilip",
-"Bhoye Bhushan Rohidas","Gavit Aarov Habel","Gavit Aarush Rahul","Gavit Aaryan Mehaman",
-"Gavit Arpit Vishnu","Gavit Jigar Jivan","Gavit Madhur Ravindra","Gavit Preyars Suresh",
-"Gavit Priyans Suhas","Gavit Shreyash Sanjay","Gavit Smit Sanjay","Gavit Tejas Dinesh",
-"Gavit Tejas Kushal","Gosavi Aayush Savan","Hire Sarthak Anant","Jadhav Kartikkumar Sanjaykumar",
-"Kokani Samarth Hemant","Lohiya Arhan Shahrukh","Makrani Avesh Aziz","Mavchi Abhimanyu Vilesh",
-"Mavchi Paresh Harish","Mavchi Prince Naresh","Mavchi Prince Ravish","More Sarthak Sanjay",
-"Paradhi Toshit Bhaiyya","Pardeshi Aarav Yogesh","Pathan Moh. Affan Ibrahim","Patil Prakash Ketan",
-"Patil Vedant Jitendra","Pawar Tanmay Pralhad","Sain Ridhansh Dharmeshkumar","Shaikh Samar Rafik",
-"Shaikh Zaid Mohsinoddin","Sonavane Shivraj Girish","Tidke Yash Balasaheb","Valvi Mohit Umesh",
-"Valvi Saksham Rahul","Valvi Varun Vipul","Wadekar Aryan Ravindra","Wagh Laksh Lalit"
-];
-
+const SK='classAttendanceStudents',HK='classAttendanceHistory',SETK='classAttendanceSettings',VK='classAttendanceAppVersion',APP_VERSION='3.0.0';
 let students=JSON.parse(localStorage.getItem(SK)||'null');
-if(!students){
-students=defaultStudents.map((name,i)=>({id:'s'+(i+1),name,active:true}));
-localStorage.setItem(SK,JSON.stringify(students));
-}
 let history=JSON.parse(localStorage.getItem(HK)||'{}');
-let settings=JSON.parse(localStorage.getItem(SETK)||'null')||{className:'5-A',schoolName:'',teacherName:''};
-let today=key();
+let settings=JSON.parse(localStorage.getItem(SETK)||'null')||{className:'',schoolName:'',teacherName:''};
+let page='today',pageStack=[],editingId=null,today=key();
 
-date.textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+function key(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function save(){localStorage.setItem(SK,JSON.stringify(students));localStorage.setItem(HK,JSON.stringify(history))}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),2200)}
+function escapeName(n){return String(n||'').replace(/^\uFEFF/,'').trim().replace(/\s+/g,' ')}
+function freshId(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function data(){if(!history[today])history[today]={status:{},remark:{}};history[today].status??={};history[today].remark??={};students.filter(s=>s.active).forEach(s=>{history[today].status[s.id]??='Present';history[today].remark[s.id]??=''});save();return history[today]}
+function streak(id,status){let n=1,d=new Date();d.setDate(d.getDate()-1);while(true){const r=history[key(d)];if(!r?.status||r.status[id]!==status)break;n++;d.setDate(d.getDate()-1)}return n}
 
-function key(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-
-function save(){
-localStorage.setItem(SK,JSON.stringify(students));
-localStorage.setItem(HK,JSON.stringify(history));
+function init(){
+document.getElementById('date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+document.getElementById('headerSub').textContent=settings.className?settings.className+' • Simple • Smart • Teacher-Friendly':'Simple • Smart • Teacher-Friendly';
+const old=localStorage.getItem(VK);
+if(!old){localStorage.setItem(VK,APP_VERSION)}
+if(students===null){students=[];save()}
+if(Array.isArray(students)&&students.length===72&&students.every((s,i)=>s.id==='s'+(i+1))){students=[];save();toast('Ready for your student list')}
+loadSettings();renderAll();
 }
-
-function data(){
-if(!history[today])history[today]={status:{},remark:{}};
-if(!history[today].status)history[today].status={};
-if(!history[today].remark)history[today].remark={};
-students.filter(s=>s.active).forEach(s=>{
-if(!history[today].status[s.id])history[today].status[s.id]='Present';
-if(history[today].remark[s.id]===undefined)history[today].remark[s.id]='';
-});
-save();return history[today];
+function renderAll(){renderAttendance();renderStudents();summary();updateEmpty()}
+function updateEmpty(){const empty=!students.some(s=>s.active);document.getElementById('noRoster').classList.toggle('hidden',!empty)}
+function summary(){const d=data(),a=students.filter(s=>s.active),c={Present:0,Absent:0,Late:0};a.forEach(s=>c[d.status[s.id]||'Present']++);presentCount.textContent=c.Present;absentCount.textContent=c.Absent;lateCount.textContent=c.Late}
+function renderAttendance(){
+const box=document.getElementById('studentList'),q=(document.getElementById('searchInput').value||'').trim().toLowerCase();box.innerHTML='';const d=data();const list=students.filter(s=>s.active&&(!q||s.name.toLowerCase().includes(q)));
+if(!list.length){box.innerHTML='<div class="card empty">'+(students.some(s=>s.active)?'No matching student.':'No students yet — import your list from Settings.')+'</div>';summary();return}
+list.forEach((s,i)=>{const card=document.createElement('div');card.className='card studentCard';const grid=document.createElement('div');grid.className='student';const num=document.createElement('div');num.className='number';num.textContent=(students.filter(x=>x.active).indexOf(s)+1);const nm=document.createElement('div');nm.className='name';nm.textContent=s.name;const sel=document.createElement('select');sel.className='status';['Present','Absent','Late'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o)});sel.value=d.status[s.id]||'Present';grid.append(num,nm,sel);const rem=document.createElement('select');rem.className='remark';['Without Permission','With Permission','Sick / Medical','Family / Personal Reason','Transport / Travel','Other'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;rem.appendChild(o)});rem.value=d.remark[s.id]||'Without Permission';const st=document.createElement('div');st.className='streak';card.append(grid,rem,st);box.appendChild(card);
+function update(){const v=sel.value;d.status[s.id]=v;if(v==='Absent'){rem.style.display='block';d.remark[s.id]||='Without Permission';rem.value=d.remark[s.id];const n=streak(s.id,'Absent');st.textContent=n>1?'⚠️ Absent – Since '+n+' days':'⚠️ Absent today'}else if(v==='Late'){rem.style.display='none';d.remark[s.id]='';const n=streak(s.id,'Late');st.textContent=n>1?'⏰ Daily Late – Since '+n+' days':'⏰ Late today'}else{rem.style.display='none';d.remark[s.id]='';st.textContent=''}save();summary()}sel.onchange=update;rem.onchange=()=>{d.remark[s.id]=rem.value;save()};update()})
 }
-
-/* Consecutive streak: only uninterrupted calendar days count.
-   Any missing day or Present day breaks the streak. */
-function streak(id,status){
-let n=1, d=new Date();
-d.setDate(d.getDate()-1);
-while(true){
-const k=key(d);
-const r=history[k];
-if(!r||!r.status||r.status[id]!==status)break;
-n++;
-d.setDate(d.getDate()-1);
-}
-return n;
-}
-
-function createStudents(){
-studentList.innerHTML='';
-const d=data();
-students.filter(s=>s.active).forEach((s,i)=>{
-const card=document.createElement('div');card.className='student';
-const top=document.createElement('div');top.className='student-top';
-const num=document.createElement('div');num.className='number';num.textContent=i+1;
-const name=document.createElement('div');name.className='name';name.textContent=s.name;
-const sel=document.createElement('select');sel.className='status';
-['Present','Absent','Late'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);});
-sel.value=d.status[s.id]||'Present';
-const rem=document.createElement('select');rem.className='remark';
-['Without Permission','With Permission','Sick / Medical','Family / Personal Reason','Transport / Travel','Other'].forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;rem.appendChild(o);});
-rem.value=d.remark[s.id]||'Without Permission';
-const st=document.createElement('div');st.className='streak';
-top.append(num,name,sel);card.append(top,rem,st);studentList.appendChild(card);
-
-function upd(){
-const v=sel.value;d.status[s.id]=v;
-if(v==='Absent'){
-rem.style.display='block';
-if(!d.remark[s.id])d.remark[s.id]='Without Permission';
-rem.value=d.remark[s.id];
-const n=streak(s.id,'Absent');
-st.textContent=n>1?'⚠️ Absent – Since '+n+' days':'⚠️ Absent today';
-}else if(v==='Late'){
-rem.style.display='none';d.remark[s.id]='';
-const n=streak(s.id,'Late');
-st.textContent=n>1?'⏰ Daily Late – Since '+n+' days':'⏰ Late today';
-}else{
-rem.style.display='none';d.remark[s.id]='';st.textContent='';
-}
-save();summary();
-}
-sel.onchange=upd;
-rem.onchange=()=>{d.remark[s.id]=rem.value;save();};
-upd();
-});
-}
-
-function summary(){
-const d=data();let p=0,a=0,l=0;
-students.filter(s=>s.active).forEach(s=>{
-const v=d.status[s.id]||'Present';
-if(v==='Present')p++;else if(v==='Absent')a++;else if(v==='Late')l++;
-});
-presentCount.textContent=p;absentCount.textContent=a;lateCount.textContent=l;
-}
-
 function generateWhatsApp(){
-const d=data(),a=[],l=[];
-const active=students.filter(s=>s.active);
-
-active.forEach(s=>{
-const v=d.status[s.id];
-if(v==='Absent'){
-const n=streak(s.id,'Absent');
-const r=d.remark[s.id]||'Without Permission';
-a.push({name:s.name,remark:r,days:n});
-}
-if(v==='Late'){
-const n=streak(s.id,'Late');
-l.push({name:s.name,days:n});
-}
-});
-
-const present=active.length-a.length-l.length;
-let m='📋 *CLASS ATTENDANCE — '+settings.className+'*\n';
-if(settings.schoolName)m+='🏫 '+settings.schoolName+'\n';
-if(settings.teacherName)m+='👨‍🏫 '+settings.teacherName+'\n';
-m+='📅 *'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'*\n\n';
-
-if(a.length){
-m+='━━━━━━━━━━━━━━━━━━\n';
-m+='❌ *ABSENT — '+a.length+'*\n';
-m+='━━━━━━━━━━━━━━━━━━\n';
-a.forEach((x,i)=>{
-  m+=(i+1)+'️⃣ *'+x.name+'*\n';
-  m+='   ⚠️ '+x.remark;
-  if(x.days>1)m+=' | Absent '+x.days+' days';
-  m+='\n';
-});
-m+='\n';
-}
-
-if(l.length){
-m+='━━━━━━━━━━━━━━━━━━\n';
-m+='⏰ *LATE — '+l.length+'*\n';
-m+='━━━━━━━━━━━━━━━━━━\n';
-l.forEach((x,i)=>{
-  m+=(i+1)+'️⃣ *'+x.name+'*';
-  if(x.days>1)m+=' | Daily Late '+x.days+' days';
-  else m+=' | Late';
-  m+='\n';
-});
-m+='\n';
-}
-
-m+='━━━━━━━━━━━━━━━━━━\n';
-m+='📊 *TODAY’S SUMMARY*\n';
-m+='━━━━━━━━━━━━━━━━━━\n';
-m+='👥 Total Students: '+active.length+'\n';
-m+='✅ Present: '+present+'\n';
-m+='❌ Absent: '+a.length+'\n';
-m+='⏰ Late: '+l.length+'\n';
-m+='━━━━━━━━━━━━━━━━━━\n';
-m+='📌 *Attendance updated for today.*';
-
-messageBox.style.display='block';messageBox.value=m;
-
-// Android APK: open the real Android Share Sheet (WhatsApp, Messages, Gmail, etc.)
-if(window.AndroidShare && typeof window.AndroidShare.shareText==='function'){
-  window.AndroidShare.shareText(m);
-}else if(navigator.share){
-  navigator.share({title:'Class Attendance — '+settings.className,text:m}).catch(()=>{});
-}else if(navigator.clipboard){
-  navigator.clipboard.writeText(m);
-  alert('Message copied. You can paste it in WhatsApp.');
-}
-}
-
-function saveSettings(){
-settings.className=(document.getElementById('classNameInput').value.trim()||'My Class');
-settings.schoolName=document.getElementById('schoolNameInput').value.trim();
-settings.teacherName=document.getElementById('teacherNameInput').value.trim();
-localStorage.setItem(SETK,JSON.stringify(settings));
-alert('Settings saved successfully.');
-}
-
-function loadSettings(){
-document.getElementById('classNameInput').value=settings.className||'';
-document.getElementById('schoolNameInput').value=settings.schoolName||'';
-document.getElementById('teacherNameInput').value=settings.teacherName||'';
-}
-
-function addImportedNames(names){
-const clean=[];
-names.forEach(n=>{
-n=String(n).replace(/^\uFEFF/,'').trim();
-if(!n)return;
-if(/^sr\.?\s*no|^serial|^roll\s*no|^student\s*name|^name$/i.test(n))return;
-const parts=n.split(',').map(x=>x.trim()).filter(Boolean);
-let name=parts.length>1 ? parts[parts.length-1] : n;
-name=name.replace(/^\d+[.)-]?\s*/,'').trim();
-if(name)clean.push(name);
-});
-const unique=[...new Set(clean.map(x=>x.toLowerCase()))].map(k=>clean.find(x=>x.toLowerCase()===k));
-let added=0;
-unique.forEach(name=>{
-if(!students.some(s=>s.name.toLowerCase()===name.toLowerCase())){
-const id='s'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-students.push({id,name,active:true});
-data().status[id]='Present';data().remark[id]='';added++;
-}
-});
-save();renderStudents();createStudents();summary();
-return added;
-}
-
-function importPastedStudents(){
-const box=document.getElementById('pasteStudents');
-const names=box.value.split(/\r?\n/);
-const added=addImportedNames(names);
-if(added){box.value='';alert(added+' students imported successfully.');}
-else alert('No new student names found.');
-}
-
-function importStudents(){
-const input=document.getElementById('studentFile');
-if(!input.files.length)return alert('Please select a CSV or TXT file first.');
-const file=input.files[0];
-const reader=new FileReader();
-reader.onload=()=>{
-const text=reader.result||'';
-const names=text.split(/\r?\n/);
-const added=addImportedNames(names);
-if(added){input.value='';alert(added+' students imported successfully.');}
-else alert('No new student names found. Check the file format.');
-};
-reader.readAsText(file);
-}
-
-function resetToday(){
-if(!confirm("Reset today's attendance to Present?"))return;
-history[today]={status:{},remark:{}};data();createStudents();summary();messageBox.style.display='none';
-}
-
-function showPage(p){
-todayPage.classList.toggle('hidden',p!=='today');
-studentsPage.classList.toggle('hidden',p!=='students');
-settingsPage.classList.toggle('hidden',p!=='settings');
-todayTab.classList.toggle('active',p==='today');
-studentsTab.classList.toggle('active',p==='students');
-settingsTab.classList.toggle('active',p==='settings');
-if(p==='students')renderStudents();
-if(p==='settings')loadSettings();
-}
-
-function renderStudents(){
-activeStudents.innerHTML='';inactiveStudents.innerHTML='';
-students.forEach((s,i)=>{
-const row=document.createElement('div');row.className='studentManage';
-const r=document.createElement('div');r.className='manageRow';
-const n=document.createElement('div');n.className='manageNumber';n.textContent=i+1;
-const nm=document.createElement('div');nm.className='manageName';nm.textContent=s.name;
-const e=document.createElement('button');e.className='smallBtn editBtn';e.textContent='✏️ Edit';e.onclick=()=>editStudent(s.id);
-const b=document.createElement('button');b.className='smallBtn '+(s.active?'offBtn':'onBtn');b.textContent=s.active?'🟠 Deactivate':'🔄 Reactivate';b.onclick=()=>toggleStudent(s.id);
-r.append(n,nm,e,b);row.append(r);
-(s.active?activeStudents:inactiveStudents).appendChild(row);
-});
-if(!inactiveStudents.children.length)inactiveStudents.innerHTML='<div style="color:#777;padding:8px">No deactivated students.</div>';
-}
-
-function addStudent(){
-const input=document.getElementById('newStudentName'),name=input.value.trim();
-if(!name)return alert('Please enter student name.');
-if(students.some(s=>s.name.toLowerCase()===name.toLowerCase()))return alert('This student already exists.');
-const s={id:'s'+Date.now(),name,active:true};students.push(s);
-data().status[s.id]='Present';data().remark[s.id]='';save();
-input.value='';renderStudents();createStudents();summary();alert(name+' added successfully.');
-}
-
-function editStudent(id){
-const s=students.find(x=>x.id===id);let n=prompt('Edit student name:',s.name);
-if(n===null)return;n=n.trim();
-if(!n)return alert('Name cannot be empty.');
-if(students.some(x=>x.id!==id&&x.name.toLowerCase()===n.toLowerCase()))return alert('This student name already exists.');
-s.name=n;save();renderStudents();createStudents();
-}
-
-function toggleStudent(id){
-const s=students.find(x=>x.id===id);
-if(s.active&&!confirm('Deactivate '+s.name+'?'))return;
-if(!s.active&&!confirm('Reactivate '+s.name+'?'))return;
-s.active=!s.active;
-if(s.active){data().status[s.id]='Present';data().remark[s.id]='';}
-save();renderStudents();createStudents();summary();
-}
-
-createStudents();summary();
+const d=data(),a=[],l=[],active=students.filter(s=>s.active);active.forEach(s=>{if(d.status[s.id]==='Absent')a.push({name:s.name,remark:d.remark[s.id]||'Without Permission',days:streak(s.id,'Absent')});if(d.status[s.id]==='Late')l.push({name:s.name,days:streak(s.id,'Late')})});
+const p=active.length-a.length-l.length;let m='📋 *CLASS ATTENDANCE — '+(settings.className||'My Class')+'*\n';if(settings.schoolName)m+='🏫 '+settings.schoolName+'\n';if(settings.teacherName)m+='👨‍🏫 '+settings.teacherName+'\n';m+='📅 *'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'*\n\n';
+if(a.length){m+='━━━━━━━━━━━━━━━━━━\n❌ *ABSENT — '+a.length+'*\n━━━━━━━━━━━━━━━━━━\n';a.forEach((x,i)=>{m+=(i+1)+'️⃣ *'+x.name+'*\n   ⚠️ '+x.remark+(x.days>1?' | Absent '+x.days+' days':'')+'\n'});m+='\n'}
+if(l.length){m+='━━━━━━━━━━━━━━━━━━\n⏰ *LATE — '+l.length+'*\n━━━━━━━━━━━━━━━━━━\n';l.forEach((x,i)=>m+=(i+1)+'️⃣ *'+x.name+'* | '+(x.days>1?'Daily Late '+x.days+' days':'Late')+'\n');m+='\n'}
+m+='━━━━━━━━━━━━━━━━━━\n📊 *TODAY’S SUMMARY*\n━━━━━━━━━━━━━━━━━━\n👥 Total Students: '+active.length+'\n✅ Present: '+p+'\n❌ Absent: '+a.length+'\n⏰ Late: '+l.length+'\n━━━━━━━━━━━━━━━━━━\n📌 *Attendance updated for today.*';messageBox.style.display='block';messageBox.value=m;
+if(window.AndroidShare?.shareText)AndroidShare.shareText(m);else if(navigator.share)navigator.share({title:'Class Attendance',text:m}).catch(()=>{});else{navigator.clipboard?.writeText(m);toast('Message copied')}}
+function saveSettings(){settings.className=escapeName(classNameInput.value).slice(0,50)||'My Class';settings.schoolName=escapeName(schoolNameInput.value).slice(0,160);settings.teacherName=escapeName(teacherNameInput.value).slice(0,100);localStorage.setItem(SETK,JSON.stringify(settings));headerSub.textContent=settings.className+' • Simple • Smart • Teacher-Friendly';saveState.textContent='✓ Saved successfully on this device';saveState.className='saveState saved';toast('Settings saved successfully')}
+function loadSettings(){classNameInput.value=settings.className||'';schoolNameInput.value=settings.schoolName||'';teacherNameInput.value=settings.teacherName||'';saveState.textContent='✓ Current settings loaded';saveState.className='saveState saved'}
+function addNames(lines){const clean=[];lines.forEach(raw=>{let n=escapeName(raw);if(!n||/^(sr\.?\s*no|serial|roll\s*no|student\s*name|name)$/i.test(n))return;const parts=n.split(',').map(x=>escapeName(x)).filter(Boolean);n=parts.length>1?parts[parts.length-1]:n;n=n.replace(/^\d+[.)-]?\s*/,'').trim();if(n&&n.length<=120)clean.push(n)});const seen=new Set(students.map(s=>s.name.toLowerCase())),added=[];[...new Set(clean.map(x=>x.toLowerCase()))].forEach(k=>{const n=clean.find(x=>x.toLowerCase()===k);if(!seen.has(k)){const s={id:freshId(),name:n,active:true};students.push(s);data().status[s.id]='Present';data().remark[s.id]='';seen.add(k);added.push(n)}});save();renderAll();return added}
+function importPastedStudents(){const added=addNames(pasteStudents.value.split(/\r?\n/));if(added.length){pasteStudents.value='';importState.textContent='✓ '+added.length+' students imported successfully';importState.className='saveState saved';toast(added.length+' students added successfully')}else{importState.textContent='No new student names found';importState.className='saveState notSaved';toast('No new students imported')}}
+function importStudents(){const f=studentFile.files[0];if(!f){importState.textContent='✕ Please select a CSV or TXT file';importState.className='saveState notSaved';toast('Select a file first');return}const reader=new FileReader();reader.onload=e=>{try{const added=addNames(String(e.target.result||'').split(/\r?\n/));if(added.length){studentFile.value='';importState.textContent='✓ '+added.length+' students imported successfully';importState.className='saveState saved';toast(added.length+' students imported successfully')}else{importState.textContent='✕ No new names found. Check the file';importState.className='saveState notSaved'}}catch(err){importState.textContent='✕ Could not read this file';importState.className='saveState notSaved'}};reader.onerror=()=>{importState.textContent='✕ File could not be opened';importState.className='saveState notSaved'};reader.readAsText(f)}
+function addStudent(){const n=escapeName(newStudentName.value);if(!n){toast('Enter a student name');return}if(students.some(s=>s.name.toLowerCase()===n.toLowerCase())){toast('This student already exists');return}const s={id:freshId(),name:n,active:true};students.push(s);data().status[s.id]='Present';data().remark[s.id]='';save();newStudentName.value='';renderAll();toast(n+' added successfully')}
+function editStudent(id){const s=students.find(x=>x.id===id);if(!s)return;editingId=id;editNameInput.value=s.name;editModal.classList.remove('hidden');setTimeout(()=>editNameInput.focus(),50)}
+function closeModal(){editModal.classList.add('hidden');editingId=null}
+function saveEditedStudent(){const s=students.find(x=>x.id===editingId),n=escapeName(editNameInput.value);if(!s)return closeModal();if(!n){toast('Name cannot be empty');return}if(students.some(x=>x.id!==s.id&&x.name.toLowerCase()===n.toLowerCase())){toast('This student already exists');return}s.name=n;save();closeModal();renderAll();toast('Student edited successfully')}
+function toggleStudent(id){const s=students.find(x=>x.id===id);if(!s)return;if(s.active&&!confirm('Deactivate '+s.name+'?'))return;s.active=!s.active;if(s.active){data().status[s.id]='Present';data().remark[s.id]=''}save();renderAll();toast(s.active?'Student reactivated successfully':'Student deactivated successfully')}
+function deleteStudent(id){const s=students.find(x=>x.id===id);if(!s)return;if(!confirm('Delete '+s.name+' permanently? This removes the student from this device.'))return;students=students.filter(x=>x.id!==id);Object.keys(history).forEach(k=>{delete history[k].status?.[id];delete history[k].remark?.[id]});save();renderAll();toast('Student deleted successfully')}
+function renderStudents(){const active=students.filter(s=>s.active),inactive=students.filter(s=>!s.active);studentCountLabel.textContent='('+active.length+' active)';activeStudents.innerHTML='';inactiveStudents.innerHTML='';if(!active.length)activeStudents.innerHTML='<div class="empty">No active students. Import or add your class list.</div>';active.forEach((s,i)=>activeStudents.appendChild(manageRow(s,i+1)));if(!inactive.length)inactiveStudents.innerHTML='<div class="empty">No deactivated students.</div>';inactive.forEach((s,i)=>inactiveStudents.appendChild(manageRow(s,i+1)))}
+function manageRow(s,i){const card=document.createElement('div');card.className='card manage';const n=document.createElement('div');n.className='number';n.textContent=i;const wrap=document.createElement('div');const nm=document.createElement('div');nm.className='manageName';nm.textContent=s.name;const bs=document.createElement('div');bs.className='manageBtns';const e=document.createElement('button');e.className='btn small edit';e.textContent='✏️ Edit';e.onclick=()=>editStudent(s.id);const t=document.createElement('button');t.className='btn small '+(s.active?'deact':'react');t.textContent=s.active?'🟠 Deactivate':'🔄 Reactivate';t.onclick=()=>toggleStudent(s.id);const del=document.createElement('button');del.className='btn small delete';del.textContent='🗑️ Delete';del.onclick=()=>deleteStudent(s.id);bs.append(e,t,del);wrap.append(nm,bs);card.append(n,wrap);return card}
+function resetToday(){if(!students.some(s=>s.active)){toast('No students to reset');return}if(!confirm('Reset today attendance to Present for all active students?'))return;history[today]={status:{},remark:{}};data();renderAll();messageBox.style.display='none';toast('Today reset successfully')}
+function showPage(p,push=true){if(p===page)return;if(push)pageStack.push(page);page=p;['today','students','settings'].forEach(x=>document.getElementById(x+'Page').classList.toggle('hidden',x!==p));['today','students','settings'].forEach(x=>document.getElementById(x+'Tab').classList.toggle('active',x===p));backBtn.classList.toggle('show',p!=='today');if(p==='students')renderStudents();if(p==='settings')loadSettings();window.scrollTo(0,0)}
+function goBack(){if(pageStack.length){const p=pageStack.pop();showPage(p,false)}else showPage('today',false)}
+function handleAndroidBack(){if(editingId){closeModal();return true}if(page!=='today'||pageStack.length){goBack();return true}return false}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&editingId)closeModal()});
+window.handleAndroidBack=handleAndroidBack;
+init();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./service-worker.js');
 </script>
 </body>
