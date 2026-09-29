@@ -39,6 +39,7 @@ jobs:
           cp manifest.json app/src/main/assets/manifest.json
           cp service-worker.js app/src/main/assets/service-worker.js
           cp xlsx.full.min.js app/src/main/assets/xlsx.full.min.js
+          cp icon.svg app/src/main/assets/icon.svg
 
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
