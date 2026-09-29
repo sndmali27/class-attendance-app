@@ -146,12 +146,25 @@ list.forEach((s,i)=>{const card=document.createElement('div');card.className='ca
 function update(){const v=sel.value;d.status[s.id]=v;if(v==='Absent'){rem.style.display='block';d.remark[s.id]||='Without Permission';rem.value=d.remark[s.id];const n=streak(s.id,'Absent');st.textContent=n>1?'⚠️ Absent – Since '+n+' days':'⚠️ Absent today'}else if(v==='Late'){rem.style.display='none';d.remark[s.id]='';const n=streak(s.id,'Late');st.textContent=n>1?'⏰ Daily Late – Since '+n+' days':'⏰ Late today'}else{rem.style.display='none';d.remark[s.id]='';st.textContent=''}save();summary()}sel.onchange=update;rem.onchange=()=>{d.remark[s.id]=rem.value;save()};update()})
 }
 function generateWhatsApp(mode='full'){
-const d=data(),a=[],l=[],active=students.filter(s=>s.active);active.forEach(s=>{if(d.status[s.id]==='Absent')a.push({name:s.name,remark:d.remark[s.id]||'Without Permission',days:streak(s.id,'Absent')});if(d.status[s.id]==='Late')l.push({name:s.name,days:streak(s.id,'Late')})});
-const p=active.length-a.length-l.length;let m='📋 *CLASS ATTENDANCE — '+(settings.className||'My Class')+'*\n';if(settings.schoolName)m+='🏫 '+settings.schoolName+'\n';if(settings.teacherName)m+='👨‍🏫 '+settings.teacherName+'\n';m+='📅 *'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'*\n\n';
-if(a.length){m+='━━━━━━━━━━━━━━━━━━\n❌ *ABSENT — '+a.length+'*\n━━━━━━━━━━━━━━━━━━\n';a.forEach((x,i)=>{m+=(i+1)+'️⃣ *'+x.name+'*\n   ⚠️ '+x.remark+(x.days>1?' | Absent '+x.days+' days':'')+'\n'});m+='\n'}
+const d=data(),a=[],l=[],active=students.filter(s=>s.active);
+active.forEach(s=>{if(d.status[s.id]==='Absent')a.push({name:s.name,remark:d.remark[s.id]||'Without Permission',days:streak(s.id,'Absent')});if(d.status[s.id]==='Late')l.push({name:s.name,days:streak(s.id,'Late')})});
+const p=active.length-a.length-l.length;
+let m='📋 *CLASS ATTENDANCE — '+(settings.className||'My Class')+'*\n';
+if(settings.schoolName)m+='🏫 '+settings.schoolName+'\n';
+if(settings.teacherName)m+='👨‍🏫 '+settings.teacherName+'\n';
+m+='📅 *'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'})+'*\n\n';
+if(mode==='absent'){
+m+=a.length?'❌ *ABSENT — '+a.length+'*\n'+a.map((x,i)=>(i+1)+'. *'+x.name+'* — '+x.remark+(x.days>1?' | Absent '+x.days+' days':'')).join('\n'):'✅ No absent students today.';
+}else if(mode==='late'){
+m+=l.length?'⏰ *LATE — '+l.length+'*\n'+l.map((x,i)=>(i+1)+'. *'+x.name+'* — '+(x.days>1?'Daily Late '+x.days+' days':'Late')).join('\n'):'✅ No late students today.';
+}else{
+if(a.length){m+='━━━━━━━━━━━━━━━━━━\n❌ *ABSENT — '+a.length+'*\n━━━━━━━━━━━━━━━━━━\n';a.forEach((x,i)=>m+=(i+1)+'️⃣ *'+x.name+'*\n   ⚠️ '+x.remark+(x.days>1?' | Absent '+x.days+' days':'')+'\n');m+='\n'}
 if(l.length){m+='━━━━━━━━━━━━━━━━━━\n⏰ *LATE — '+l.length+'*\n━━━━━━━━━━━━━━━━━━\n';l.forEach((x,i)=>m+=(i+1)+'️⃣ *'+x.name+'* | '+(x.days>1?'Daily Late '+x.days+' days':'Late')+'\n');m+='\n'}
-if(mode==='absent'){m=a.length?'❌ *ABSENT — '+a.length+'*\n'+a.map((x,i)=>(i+1)+'. *'+x.name+'* — '+x.remark+(x.days>1?' | Absent '+x.days+' days':'')).join('\n'):'✅ No absent students today.';m+='\n\n📅 '+new Date().toLocaleDateString('en-IN')+' | '+(settings.className||'My Class')}else if(mode==='late'){m=l.length?'⏰ *LATE — '+l.length+'*\n'+l.map((x,i)=>(i+1)+'. *'+x.name+'* — '+(x.days>1?'Daily Late '+x.days+' days':'Late')).join('\n'):'✅ No late students today.';m+='\n\n📅 '+new Date().toLocaleDateString('en-IN')+' | '+(settings.className||'My Class')}else m+='━━━━━━━━━━━━━━━━━━\n📊 *TODAY’S SUMMARY*\n━━━━━━━━━━━━━━━━━━\n👥 Total Students: '+active.length+'\n✅ Present: '+p+'\n❌ Absent: '+a.length+'\n⏰ Late: '+l.length+'\n━━━━━━━━━━━━━━━━━━\n📌 *Attendance updated for today.*';messageBox.style.display='block';messageBox.value=m;
-if(window.AndroidShare?.shareText)AndroidShare.shareText(m);else if(navigator.share)navigator.share({title:'Class Attendance',text:m}).catch(()=>{});else{navigator.clipboard?.writeText(m);toast('Message copied')}}
+m+='━━━━━━━━━━━━━━━━━━\n📊 *TODAY’S SUMMARY*\n━━━━━━━━━━━━━━━━━━\n👥 Total Students: '+active.length+'\n✅ Present: '+p+'\n❌ Absent: '+a.length+'\n⏰ Late: '+l.length+'\n━━━━━━━━━━━━━━━━━━\n📌 *Attendance updated for today.*';
+}
+messageBox.style.display='block';messageBox.value=m;
+if(window.AndroidShare?.shareText)AndroidShare.shareText(m);else if(navigator.share)navigator.share({title:'Class Attendance',text:m}).catch(()=>{});else{navigator.clipboard?.writeText(m);toast('Message copied')}
+}
 function renderClassOptions(){const sel=document.getElementById('classOptions');if(!sel)return;const current=settings.className||'';sel.innerHTML='<option value="">Select class</option>';classOptions.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;o.selected=x===current;sel.appendChild(o)})}
 function selectClassOption(){const v=document.getElementById('classOptions').value;if(!v)return;switchClass(v)}
 function switchClass(v){if(!v||v===settings.className)return;if(settings.className){classData[settings.className]={students,history,holidays}}const d=classData[v]||{students:[],history:{},holidays:{}};students=Array.isArray(d.students)?d.students:[];history=d.history||{};holidays=d.holidays||{};settings.className=v;classData[v]={students,history,holidays};save();classNameInput.value=v;headerSub.textContent=v+' • Simple • Smart • Teacher-Friendly';renderAll();toast('Switched to '+v)}
