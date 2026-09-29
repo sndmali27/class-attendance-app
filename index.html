@@ -32,15 +32,24 @@ h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;
 <div id="tabs" class="tabs">
 <button id="todayTab" class="tab active" onclick="showPage('today')">📋 Today</button>
 <button id="studentsTab" class="tab" onclick="showPage('students')">👥 Students</button>
+<button id="historyTab" class="tab" onclick="showPage('history')">📊 History</button>
 <button id="settingsTab" class="tab" onclick="showPage('settings')">⚙️ Settings</button>
 </div>
 
 <section id="todayPage">
 <div id="noRoster" class="notice hidden">👋 <b>Welcome!</b> Add or import your student list first. Your attendance screen will appear here after students are added.</div>
 <div class="summary"><div class="box present"><strong id="presentCount">0</strong>Present</div><div class="box absent"><strong id="absentCount">0</strong>Absent</div><div class="box late"><strong id="lateCount">0</strong>Late</div></div>
-<div class="actions"><button class="btn whatsapp" onclick="generateWhatsApp()">📱 Share Attendance</button><button class="btn reset" onclick="resetToday()">🔄 Reset Today</button></div>
+<div class="actions"><button class="btn whatsapp" onclick="generateWhatsApp()">📱 Share Attendance</button><button class="btn primary" onclick="markAll('Present')">✅ Mark All Present</button><button class="btn secondary" onclick="markAll('Absent')">❌ Mark All Absent</button><button class="btn secondary" onclick="markAll('Late')">⏰ Mark All Late</button><button class="btn reset" onclick="resetToday()">🔄 Reset Today</button></div>
 <div class="search"><input id="searchInput" placeholder="🔎 Search student for quick marking..." oninput="renderAttendance()"></div>
 <div id="studentList"></div><textarea id="messageBox" readonly style="display:none;width:100%;min-height:160px"></textarea>
+</section>
+
+<section id="historyPage" class="hidden">
+<button class="btn secondary" onclick="showPage('today')" style="width:100%;margin-bottom:10px">← Back to Attendance</button>
+<div class="card"><div class="sectionTitle">📊 Attendance History</div>
+<div class="row"><button class="btn secondary" onclick="changeHistoryDate(-1)">‹ Previous</button><input id="historyDate" type="date" class="forminput" onchange="renderHistory()"><button class="btn secondary" onclick="changeHistoryDate(1)">Next ›</button></div>
+<div id="historySummary" class="notice" style="margin-top:10px"></div><div id="historyList"></div></div>
+<div class="card"><div class="sectionTitle">🔎 Student History</div><input id="historyStudentSearch" class="forminput" placeholder="Search student..." oninput="renderStudentHistory()"><div id="studentHistoryList"></div></div>
 </section>
 
 <section id="studentsPage" class="hidden">
@@ -64,7 +73,13 @@ h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;
 <button class="btn primary" onclick="importStudents()" style="width:100%">📥 Upload & Import</button><div id="importState" class="saveState"></div>
 </div>
 
+<div class="card"><div class="sectionTitle">💾 Backup & Restore</div><div class="muted">Backup all classes, students, attendance and settings to a file. Restore it later on another phone.</div><div class="row" style="margin-top:8px"><button class="btn primary" onclick="createBackup()">💾 Create Backup</button><label class="btn secondary" style="text-align:center;cursor:pointer">📥 Restore Backup<input id="backupFile" type="file" accept=".json,application/json" onchange="restoreBackup()" style="display:none"></label></div><div id="backupState" class="saveState"></div></div>
+
 <div class="card"><div class="sectionTitle">📋 Paste Student Names</div><textarea id="pasteStudents" placeholder="Paste one student name per line" style="width:100%;min-height:120px;padding:11px;border:1px solid #cfd7e3;border-radius:10px"></textarea><button class="btn primary" onclick="importPastedStudents()" style="width:100%;margin-top:8px">➕ Import Pasted Names</button></div>
+<div class="card"><div class="sectionTitle">🎨 Appearance</div><div class="row"><button id="themeBtn" class="btn secondary" onclick="toggleTheme()">🌙 Dark Mode</button><select id="languageSelect" class="forminput" onchange="setLanguage(this.value)"><option value="en">English</option><option value="mr">मराठी</option></select></div><div class="muted" style="margin-top:8px">Dark mode is saved on this device. Marathi labels will be expanded in a future language pack.</div></div>
+
+<div class="card"><div class="sectionTitle">🗓️ School Calendar</div><div class="muted">Mark Sundays, holidays or non-working days so attendance streaks do not count them.</div><div class="row" style="margin-top:8px"><input id="holidayDate" type="date" class="forminput"><input id="holidayLabel" class="forminput" placeholder="Holiday / Exam / Vacation"></div><button class="btn secondary" onclick="addHoliday()" style="width:100%;margin-top:8px">➕ Add Non-working Day</button><div id="holidayList" style="margin-top:8px"></div></div>
+
 <div class="card"><div class="sectionTitle">🔐 Privacy & Security</div><div class="privacy">Student names and attendance are stored locally on this device. No student list is sent to a server by this app. Destructive actions require confirmation. Avoid sharing exported attendance messages with unintended recipients.</div></div>
 </section>
 </div>
@@ -74,21 +89,22 @@ h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;
 <div id="toast" class="toast"></div>
 
 <script>
-const SK='classAttendanceStudents',HK='classAttendanceHistory',SETK='classAttendanceSettings',CK='classAttendanceClasses',VK='classAttendanceAppVersion',APP_VERSION='3.2.0';
+const SK='classAttendanceStudents',HK='classAttendanceHistory',SETK='classAttendanceSettings',CK='classAttendanceClasses',BK='classAttendanceBackup',HOLK='classAttendanceHolidays',THEMEK='classAttendanceTheme',LANGK='classAttendanceLanguage',VK='classAttendanceAppVersion',APP_VERSION='4.0.0';
 let students=JSON.parse(localStorage.getItem(SK)||'null');
 let history=JSON.parse(localStorage.getItem(HK)||'{}');
 let settings=JSON.parse(localStorage.getItem(SETK)||'null')||{className:'',schoolName:'',teacherName:''};
 let classOptions=JSON.parse(localStorage.getItem(CK)||'null')||[];
+let holidays=JSON.parse(localStorage.getItem(HOLK)||'null')||{};
 let selectedStudents=new Set();
-let page='today',pageStack=[],editingId=null,today=key();
+let page='today',pageStack=[],editingId=null,today=key(),activeHistoryDate=key();
 
 function key(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function save(){localStorage.setItem(SK,JSON.stringify(students));localStorage.setItem(HK,JSON.stringify(history));localStorage.setItem(CK,JSON.stringify(classOptions))}
+function save(){localStorage.setItem(SK,JSON.stringify(students));localStorage.setItem(HK,JSON.stringify(history));localStorage.setItem(CK,JSON.stringify(classOptions));localStorage.setItem(HOLK,JSON.stringify(holidays));localStorage.setItem(SETK,JSON.stringify(settings))}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),2200)}
 function escapeName(n){return String(n||'').replace(/^\uFEFF/,'').trim().replace(/\s+/g,' ')}
 function freshId(){return 's'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function data(){if(!history[today])history[today]={status:{},remark:{}};history[today].status??={};history[today].remark??={};students.filter(s=>s.active).forEach(s=>{history[today].status[s.id]??='Present';history[today].remark[s.id]??=''});save();return history[today]}
-function streak(id,status){let n=1,d=new Date();d.setDate(d.getDate()-1);while(true){const r=history[key(d)];if(!r?.status||r.status[id]!==status)break;n++;d.setDate(d.getDate()-1)}return n}
+function streak(id,status){let n=1,d=new Date();d.setDate(d.getDate()-1);let guard=0;while(guard++<400){const k=key(d);if(holidays[k]){d.setDate(d.getDate()-1);continue}const r=history[k];if(!r?.status||r.status[id]!==status)break;n++;d.setDate(d.getDate()-1)}return n}
 
 function init(){
 document.getElementById('date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
