@@ -22,7 +22,7 @@ h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;
 .modal{position:fixed;inset:0;background:#10182880;z-index:100;display:flex;align-items:flex-end;justify-content:center}.modalBox{background:#fff;width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px;box-shadow:0 -8px 30px #0003}.modalBox h3{margin:0 0 12px}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:200;background:#101828;color:#fff;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:750;box-shadow:0 5px 20px #0004;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
 @media(min-width:700px){.modal{align-items:center}.modalBox{border-radius:18px}.search{top:86px}}@media(max-width:520px){.student{grid-template-columns:28px 1fr}.status{grid-column:2}.tabs{position:sticky;top:74px;z-index:9}.manageBtns .small{flex:1}}
 </style>
-</head>
+<script src="./xlsx.full.min.js"></script>\n</head>
 <body>
 <header>
 <div class="headrow"><button id="backBtn" class="back" onclick="goBack()">‹</button><div><h1>📋 Class Attendance</h1><div id="headerSub" class="subtitle">Simple • Smart • Teacher-Friendly</div></div></div>
@@ -59,8 +59,8 @@ h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;
 <button class="btn primary" onclick="saveSettings()" style="width:100%;margin-top:10px">💾 Save Settings</button><div id="saveState" class="saveState"></div>
 </div>
 
-<div class="card"><div class="sectionTitle">📥 Student Import</div><div class="muted">Upload a <b>CSV or TXT</b> file. One student per line is recommended. CSV rows may contain Sr.No and Student Name.</div>
-<input id="studentFile" type="file" accept=".csv,.txt,text/csv,text/plain" style="margin:12px 0;width:100%">
+<div class="card"><div class="sectionTitle">📥 Student Import</div><div class="muted">Upload an <b>Excel (.xlsx/.xls), CSV or TXT</b> file. For Excel, the app automatically looks for a <b>Student Name / Name</b> column. Your file stays on this device.</div>
+<input id="studentFile" type="file" accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" style="margin:12px 0;width:100%">
 <button class="btn primary" onclick="importStudents()" style="width:100%">📥 Upload & Import</button><div id="importState" class="saveState"></div>
 </div>
 
@@ -74,7 +74,7 @@ h1{font-size:21px;margin:0;font-weight:800}.subtitle{font-size:12px;opacity:.88;
 <div id="toast" class="toast"></div>
 
 <script>
-const SK='classAttendanceStudents',HK='classAttendanceHistory',SETK='classAttendanceSettings',VK='classAttendanceAppVersion',APP_VERSION='3.0.0';
+const SK='classAttendanceStudents',HK='classAttendanceHistory',SETK='classAttendanceSettings',VK='classAttendanceAppVersion',APP_VERSION='3.1.0';
 let students=JSON.parse(localStorage.getItem(SK)||'null');
 let history=JSON.parse(localStorage.getItem(HK)||'{}');
 let settings=JSON.parse(localStorage.getItem(SETK)||'null')||{className:'',schoolName:'',teacherName:''};
@@ -117,7 +117,69 @@ function saveSettings(){settings.className=escapeName(classNameInput.value).slic
 function loadSettings(){classNameInput.value=settings.className||'';schoolNameInput.value=settings.schoolName||'';teacherNameInput.value=settings.teacherName||'';saveState.textContent='✓ Current settings loaded';saveState.className='saveState saved'}
 function addNames(lines){const clean=[];lines.forEach(raw=>{let n=escapeName(raw);if(!n||/^(sr\.?\s*no|serial|roll\s*no|student\s*name|name)$/i.test(n))return;const parts=n.split(',').map(x=>escapeName(x)).filter(Boolean);n=parts.length>1?parts[parts.length-1]:n;n=n.replace(/^\d+[.)-]?\s*/,'').trim();if(n&&n.length<=120)clean.push(n)});const seen=new Set(students.map(s=>s.name.toLowerCase())),added=[];[...new Set(clean.map(x=>x.toLowerCase()))].forEach(k=>{const n=clean.find(x=>x.toLowerCase()===k);if(!seen.has(k)){const s={id:freshId(),name:n,active:true};students.push(s);data().status[s.id]='Present';data().remark[s.id]='';seen.add(k);added.push(n)}});save();renderAll();return added}
 function importPastedStudents(){const added=addNames(pasteStudents.value.split(/\r?\n/));if(added.length){pasteStudents.value='';importState.textContent='✓ '+added.length+' students imported successfully';importState.className='saveState saved';toast(added.length+' students added successfully')}else{importState.textContent='No new student names found';importState.className='saveState notSaved';toast('No new students imported')}}
-function importStudents(){const f=studentFile.files[0];if(!f){importState.textContent='✕ Please select a CSV or TXT file';importState.className='saveState notSaved';toast('Select a file first');return}const reader=new FileReader();reader.onload=e=>{try{const added=addNames(String(e.target.result||'').split(/\r?\n/));if(added.length){studentFile.value='';importState.textContent='✓ '+added.length+' students imported successfully';importState.className='saveState saved';toast(added.length+' students imported successfully')}else{importState.textContent='✕ No new names found. Check the file';importState.className='saveState notSaved'}}catch(err){importState.textContent='✕ Could not read this file';importState.className='saveState notSaved'}};reader.onerror=()=>{importState.textContent='✕ File could not be opened';importState.className='saveState notSaved'};reader.readAsText(f)}
+function normalizeHeader(v){return String(v||'').toLowerCase().replace(/[\s._-]+/g,'').trim()}
+function extractNamesFromWorkbook(buf){
+if(typeof XLSX==='undefined')throw new Error('Excel engine not loaded');
+const wb=XLSX.read(buf,{type:'array',cellDates:false});
+if(!wb.SheetNames.length)throw new Error('No worksheet found');
+const ws=wb.Sheets[wb.SheetNames[0]];
+const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+if(!rows.length) return [];
+let nameCol=-1,headerRow=-1;
+const headerTerms=['studentname','studentfullname','fullname','name','student'];
+for(let r=0;r<Math.min(rows.length,15);r++){
+for(let col=0;col<rows[r].length;col++){
+const h=normalizeHeader(rows[r][col]);
+if(headerTerms.includes(h)||h.includes('studentname')||h.includes('studentfullname')){nameCol=col;headerRow=r;break}
+}
+if(nameCol>=0)break;
+}
+if(nameCol<0){
+let best={score:-1,col:0};
+const maxCols=Math.min(20,Math.max(...rows.map(r=>r.length),0));
+for(let col=0;col<maxCols;col++){
+let text=0,nonempty=0,score=0;
+for(let r=0;r<Math.min(rows.length,100);r++){
+if(r===0)continue;
+const v=String(rows[r][col]??'').trim();
+if(!v)continue;
+nonempty++;
+if(!/^[-+]?\d+(\.\d+)?$/.test(v)&&v.length>=3){
+text++;
+score+=Math.min(v.length,40);
+}
+}
+const ratio=nonempty?text/nonempty:0;
+const finalScore=score*ratio;
+if(finalScore>best.score)best={score:finalScore,col};
+}
+nameCol=best.col;headerRow=headerRow<0?0:headerRow;
+}
+const out=[];
+for(let r=headerRow+1;r<rows.length;r++){
+const v=String(rows[r][nameCol]??'').trim();
+if(v&&!/^(sr\.?\s*no|serial|roll\s*no|student\s*name|name)$/i.test(v))out.push(v);
+}
+return out;
+}
+function importStudents(){
+const f=studentFile.files[0];
+if(!f){importState.textContent='✕ Please select an Excel, CSV or TXT file';importState.className='saveState notSaved';toast('Select a file first');return}
+importState.textContent='⏳ Reading '+f.name+'...';importState.className='saveState';
+const isExcel=/\.(xlsx|xls)$/i.test(f.name)||f.type.includes('spreadsheet')||f.type.includes('excel');
+const reader=new FileReader();
+reader.onload=e=>{
+try{
+let names=[];
+if(isExcel) names=extractNamesFromWorkbook(e.target.result);
+else names=String(e.target.result||'').split(/\r?\n/);
+const added=addNames(names);
+if(added.length){studentFile.value='';importState.textContent='✓ '+added.length+' students imported successfully from '+(isExcel?'Excel':'file');importState.className='saveState saved';toast(added.length+' students imported successfully')}
+else{importState.textContent='✕ No new student names found. Check the Student Name column/file';importState.className='saveState notSaved';toast('No new students imported')}
+}catch(err){console.error(err);importState.textContent='✕ Could not read this file. '+(isExcel?'Make sure it is a valid Excel file.':'Check the file format.');importState.className='saveState notSaved';toast('Import failed — check the file')}}
+reader.onerror=()=>{importState.textContent='✕ File could not be opened';importState.className='saveState notSaved';toast('File could not be opened')};
+if(isExcel)reader.readAsArrayBuffer(f);else reader.readAsText(f);
+}
 function addStudent(){const n=escapeName(newStudentName.value);if(!n){toast('Enter a student name');return}if(students.some(s=>s.name.toLowerCase()===n.toLowerCase())){toast('This student already exists');return}const s={id:freshId(),name:n,active:true};students.push(s);data().status[s.id]='Present';data().remark[s.id]='';save();newStudentName.value='';renderAll();toast(n+' added successfully')}
 function editStudent(id){const s=students.find(x=>x.id===id);if(!s)return;editingId=id;editNameInput.value=s.name;editModal.classList.remove('hidden');setTimeout(()=>editNameInput.focus(),50)}
 function closeModal(){editModal.classList.add('hidden');editingId=null}
