@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.content.Intent;
 import android.net.Uri;
+import java.io.OutputStream;
+import java.io.IOException;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -18,6 +20,8 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
     private static final int FILE_CHOOSER_REQUEST = 1001;
+    private static final int BACKUP_CREATE_REQUEST = 1002;
+    private String pendingBackupText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,20 @@ public class MainActivity extends Activity {
             @JavascriptInterface
             public boolean goBackInApp() {
                 return false;
+            }
+
+            @JavascriptInterface
+            public void saveBackup(String text, String fileName) {
+                pendingBackupText = text;
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/json");
+                intent.putExtra(Intent.EXTRA_TITLE, fileName);
+                try {
+                    startActivityForResult(intent, BACKUP_CREATE_REQUEST);
+                } catch (Exception e) {
+                    pendingBackupText = null;
+                }
             }
         }, "AndroidShare");
 
@@ -104,6 +122,16 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == BACKUP_CREATE_REQUEST) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null && pendingBackupText != null) {
+                try (OutputStream out = getContentResolver().openOutputStream(data.getData())) {
+                    if (out != null) out.write(pendingBackupText.getBytes("UTF-8"));
+                    webView.evaluateJavascript("window.backupState && (backupState.textContent='✓ Backup saved successfully')", null);
+                } catch (Exception ignored) {}
+            }
+            pendingBackupText = null;
+            return;
+        }
         if (requestCode == FILE_CHOOSER_REQUEST && filePathCallback != null) {
             Uri[] results = null;
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
