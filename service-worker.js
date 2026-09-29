@@ -1,10 +1,11 @@
-const CACHE_NAME = "class-attendance-v3";
+const CACHE_NAME = "class-attendance-v4";
 
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./xlsx.full.min.js"
+  "./xlsx.full.min.js",
+  "./icon.svg"
 ];
 
 self.addEventListener("install", event => {
